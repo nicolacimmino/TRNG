@@ -29,6 +29,12 @@ void setup()
   
   pinMode(INPUT_SIGNAL_PIN, INPUT);
   
+   // Set ADC prescaler to 16 so we get higher sample 
+   // rate than with default settings.
+  _SFR_BYTE(ADCSRA) |=  _BV(ADPS2); // Set ADPS2
+  _SFR_BYTE(ADCSRA) &= ~_BV(ADPS1); // Clear ADPS1
+  _SFR_BYTE(ADCSRA) &= ~_BV(ADPS0); // Clear ADPS0
+  
   // Use internal 1.1V reference
   analogReference(INTERNAL);
 }
@@ -51,7 +57,7 @@ void loop()
     average=0.9*average+0.1*noiseReading;
     randomOut = (randomOut<<1)|((noiseReading>average)?1:0);
   }
-
+    
   // The data collected so far might be biased, we do some
   // whitening applying John von Neumann whitening algoirthm.
   // The algorithm consumes 2+ bits to generate one bit, the
@@ -68,11 +74,44 @@ void loop()
       whitenedBitsCount++;
       if(whitenedBitsCount==8)
       {
-        Serial.println(whitenedOut);
-        whitenedBitsCount=0; 
+        //Serial.println(whitenedOut);
+        whitenedBitsCount=0;
+        
+        evaluateOneZerosBalance(whitenedOut);
       }
      }
      randomOut=randomOut>>2;
    }
 }
 
+/*
+ * Evaluates the bias towards zeros or ones. Prints one
+ * reasult every 1Kbyte block.
+ */
+void evaluateOneZerosBalance(byte randomNumber)
+{
+  static int32_t ones=0;
+  static int32_t zeros=0;
+  
+  for(int ix=0; ix<8;ix++)
+  {
+    if(randomNumber&1 == 1)
+    {
+      ones++; 
+    }
+    else
+    {
+      zeros++;
+    }
+    randomNumber=randomNumber>>1; 
+    
+    if((ones+zeros)%(1024*8)==0)
+    {
+      Serial.print(zeros);
+      Serial.print("/");
+      Serial.println(ones);
+      ones=0;
+      zeros=0; 
+    }
+  }
+}
