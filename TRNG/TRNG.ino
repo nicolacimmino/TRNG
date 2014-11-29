@@ -19,6 +19,10 @@
 
 #define INPUT_SIGNAL_PIN A0
 
+#define OUTPUT_BLOCK_SIZE 1024
+
+// Total amount of random bytes oputput so far.
+uint32_t outputBytes=0;
 
 void setup()
 {
@@ -37,27 +41,36 @@ void setup()
   
   // Use internal 1.1V reference
   analogReference(INTERNAL);
+  
 }
-
-int average=0;
-byte randomOut=0;
-byte whitenedOut=0;
-byte whitenedBitsCount=0;
 
 void loop()
 {
-  // Collect 8 random bits. A bit is set to 1 if the current 
-  // reading is above the running average, zero otherwise.
-  // Note that the average keeps running, it's not the average
-  // of these 8 samples. This allows to accomodate for drifts
-  // in the reading due to temperature, supply voltage, aging etc.
+  
+  // Temporay storage for output random values.
+  byte static randomOut=0;
+ 
+  // Tempoary storage for output from the whitening process.
+  byte static whitenedOut=0;
+  
+  // Amount of bits produced by the whitening pocess.
+  byte static whitenedBitsCount=0;
+  
+  // Current input signal average value.
+  float static average=0;
+
+  // Collect 8 random bits by keeping track of the 
+  // average signal level with a long IIR low pass
+  // and sampling a 1 bit when the current signal is
+  // above the average and 0 otherwise.
+  
   for(int ix=0; ix<8;ix++)
   {
     int noiseReading = analogRead(INPUT_SIGNAL_PIN);
-    average=0.9*average+0.1*noiseReading;
+    average=0.99f*average+0.01f*noiseReading;
     randomOut = (randomOut<<1)|((noiseReading>average)?1:0);
-  }
-    
+  }  
+  
   // The data collected so far might be biased, we do some
   // whitening applying John von Neumann whitening algoirthm.
   // The algorithm consumes 2+ bits to generate one bit, the
@@ -74,44 +87,30 @@ void loop()
       whitenedBitsCount++;
       if(whitenedBitsCount==8)
       {
-        //Serial.println(whitenedOut);
+        outputDataHex(whitenedOut);
         whitenedBitsCount=0;
-        
-        evaluateOneZerosBalance(whitenedOut);
       }
      }
      randomOut=randomOut>>2;
    }
+   
+   if(outputBytes>=OUTPUT_BLOCK_SIZE)
+   {
+     while(Serial.read()>0);
+     while(!Serial.available());
+     Serial.println("");
+     outputBytes=0;
+   }
 }
 
 /*
- * Evaluates the bias towards zeros or ones. Prints one
- * reasult every 1Kbyte block.
+ * Output data as two digits HEX, dot separated
+ * with 16 bytes per line.
  */
-void evaluateOneZerosBalance(byte randomNumber)
+void outputDataHex(byte randomNumber)
 {
-  static int32_t ones=0;
-  static int32_t zeros=0;
-  
-  for(int ix=0; ix<8;ix++)
-  {
-    if(randomNumber&1 == 1)
-    {
-      ones++; 
-    }
-    else
-    {
-      zeros++;
-    }
-    randomNumber=randomNumber>>1; 
-    
-    if((ones+zeros)%(1024*8)==0)
-    {
-      Serial.print(zeros);
-      Serial.print("/");
-      Serial.println(ones);
-      ones=0;
-      zeros=0; 
-    }
-  }
+  Serial.print("0123456789ABCDEF"[randomNumber>>4]);
+  Serial.print("0123456789ABCDEF"[randomNumber&0xF]);
+  Serial.print((outputBytes%32==31)?"\r\n":""); 
+  outputBytes++;  
 }
