@@ -15,11 +15,13 @@
 //    along with this program.  If not, see http://www.gnu.org/licenses/.
 //
 
-#define GENERATOR_PWR_PIN 10
 
 #define INPUT_SIGNAL_PIN A0
 
 #define OUTPUT_BLOCK_SIZE 1024
+
+#define PH0 10
+#define PH1 12
 
 // Total amount of random bytes oputput so far.
 uint32_t outputBytes=0;
@@ -27,9 +29,6 @@ uint32_t outputBytes=0;
 void setup()
 {
   Serial.begin(112500);
-  
-  pinMode(GENERATOR_PWR_PIN, OUTPUT);
-  digitalWrite(GENERATOR_PWR_PIN, HIGH);
   
   pinMode(INPUT_SIGNAL_PIN, INPUT);
   
@@ -41,6 +40,9 @@ void setup()
   
   // Use internal 1.1V reference
   analogReference(INTERNAL);
+
+  pinMode(PH0, OUTPUT);
+  pinMode(PH1, OUTPUT);
   
 }
 
@@ -66,6 +68,13 @@ void loop()
   
   for(int ix=0; ix<8;ix++)
   {
+    // Keep the charge pump running so that
+    // C3 stays above 12v and the zener is
+    // in breakdown.
+    digitalWrite(PH0, (ix%2==0)?HIGH:LOW);
+    digitalWrite(PH1, (ix%2==0)?LOW:HIGH);
+    delay(1);
+
     int noiseReading = analogRead(INPUT_SIGNAL_PIN);
     average=0.99f*average+0.01f*noiseReading;
     randomOut = (randomOut<<1)|((noiseReading>average)?1:0);
@@ -80,7 +89,7 @@ void loop()
   // a 1 is taken as output, if they are "01" then 0 is taken
   // as output.
   for(int ix=0;ix<8;ix+=2)
-  {
+  {    
     if((randomOut&1) != ((randomOut>>1)&1))
     {
       whitenedOut=(whitenedOut<<1)|(randomOut&1);
