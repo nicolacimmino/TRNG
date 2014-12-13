@@ -1,13 +1,16 @@
 
-The goal of this project is to develop a true random number generator. As a sorce of entropy I have used a reversed biased zener diode. When polarized in this way a zener produces white noise in the order of few uV. The noise is amplfied by an OpAmp and input then into the Arduino A0 pin. Below is the schematic of the analog part of this device:
+The goal of this project is to develop a true random number generator. I made a first attempt to use a low voltage zener diode, a 3.8v one. I knew these diodes don't work on avalanche effect as the higher voltage ones the hope was to get enough noise to amplify with an LNA and use the noise as source of entropy. I soon realized I wasn't getting any noise at all but only leaked signal from the processor was being amplfieid. So I decided to go back to the well known higer voltage zeners and selected a 12v one. As the Arduino runs as 5v I added a charge pump to create a voltage slightly over 12 so the diode could be driven in breakdown. The schematic can be seen below.
 
 ![Schematic](documentation/schematic2.png)
+
+This produced eventually a scope trace that looks much more as noise. I don't have at the moment a frequency analysis of the source.
+
+![Scope](documentation/noise.png)
 
 And below is the assembled protorype with the noise source and an Arduino Nano.
 
 ![Proto](documentation/proto2.png)
 
-Once the noise is sampled it gets converted to a train of 0s and 1s by taking successive samples and comparing them with an average of the last samples. If the current value is above then a one is inserted in the stream otherwise a zero. This approach allows to compesate for eventual drifts in levels due to temperature or aging. The signal at this point is random but might be biased. To reduce bias I have processed the stream with John von Neumann whitening algoirthm. This consumes 2+ bits to generate one bit, so the speed of data output varies depending on the bias of the original stream. The algorithm fundamentally takes couples of bits and discards them if they are same. It does output instead a 1 if the bits are "10" and a zero if they are "01", this doesn't enhance the randomness of the data but reduces the bias towards one or zero that the data might have.
+Once the noise is sampled it gets converted to a train of 0s and 1s by taking successive samples and comparing them with an average of the last samples. If the current value is above then a one is inserted in the stream otherwise a zero. This approach allows to compesate eventual drifts in levels due to temperature or aging. The signal at this point is random but might be biased. To reduce bias I have processed the stream with John von Neumann whitening algoirthm. This consumes 2+ bits to generate one bit, so the speed of data output varies depending on the bias of the original stream. The algorithm fundamentally takes couples of bits and discards them if they are same. It does output instead a 1 if the bits are "10" and a zero if they are "01", this doesn't enhance the randomness of the data but reduces the bias towards one or zero that the data might have.
 
 
-![Scope](documentation/noise.png)
