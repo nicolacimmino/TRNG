@@ -3,7 +3,7 @@ The goal of this project is to develop a true random number generator. I made a 
 
 ![Schematic](documentation/schematic2.png)
 
-This produced eventually a scope trace that looks much more as noise. I don't have at the moment a frequency analysis of the source.
+This produced eventually a scope trace that looks much more as noise. I don't have at the moment a frequency analysis of the source. The amplitude is about 50mVpp, but since this is centered around ground it only leaves about 25mV usable for the A/D convesion, since the A/D will clip negative voltages. With the A/D reference set to the internal 1.1v source and 10-bits resolution this leaves around 4.6 bits dynamic range, not a lot, since at least the lsb could be biased by internal noise. As a first iteration I will settle for this anyway and eventually add an amplifier later.
 
 ![Scope](documentation/noise.png)
 
