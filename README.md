@@ -19,7 +19,8 @@ I made a first analysys o an admittedly small block of 1K of data. I currently h
     Entropy = 7.934235 bits per byte.
     Optimum compression would reduce the size of this 4096 byte file by 0 percent.
     
-    Chi square distribution for 4096 samples is 377.63, and randomly would exceed this value less than 0.01 percent of the times.
+    Chi square distribution for 4096 samples is 377.63, 
+    and randomly would exceed this value less than 0.01 percent of the times.
     
     Arithmetic mean value of data bytes is 134.2920 (127.5 = random).
     Monte Carlo value for Pi is 3.131964809 (error 0.31 percent).
