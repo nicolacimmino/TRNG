@@ -100,13 +100,13 @@ void loop()
     randomOut = randomOut >> 2;
   }
 
-  /*if(outputBytes>=OUTPUT_BLOCK_SIZE)
+  if(outputBytes>=OUTPUT_BLOCK_SIZE)
    {
      while(Serial.read()>0);
      while(!Serial.available());
      Serial.println("");
      outputBytes=0;
-   }*/
+   }
 }
 
 /*
