@@ -13,6 +13,16 @@ The only available voltage is the 5V provided by the USB supply so I needed to f
 
 In software the charge pump is controlled by the function runChargePump(). This takes care to sequence PH0-2 as needed until the desired voltage level is reached at the reservouir capacitor C6. This function also takes care to control the status lights that show the status of the charge pump. There is an alarm state the system can enter if the desired voltage is not reached within a certain time. Once the voltage is reached, or the alarm is entered, PH0-2 are turned into high impedance inputs. At this stage, unless the alarm mode has been entered, the noise sampling can happen, being the charge pump stopped guarantees a lower noise level.
 
+### Charge Pump Status Indicator ###
+
+Two LEDs indicate the status of the charge pump, see table below.
+
+| Yellow | Green | Status                                      |
+|--------|-------|---------------------------------------------|
+| ON     | OFF   | Charge pump running                         |
+| OFF    | ON    | Charge pump not running, voltage level OK   |
+| FLASH  | OFF   | Charge pump couldn't reach required voltage |
+
 ## The noise source ##
 
 The output of the charge pump is used to reverse bias the 12V zener diode D1 through the 530K resistor R1. The value of the resistor was determined empirically to be the one providing the best noise levels. The value of R1 also depends on the rest of the circuitry that loads the noise source, in general an higher value will mean an higher voltage fluctuation for a give current fluctuation in the zener. At the same time this raises the impedance of the noise source, so will weaken the signal when loaded. 
