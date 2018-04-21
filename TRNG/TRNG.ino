@@ -1,5 +1,6 @@
+
 // TRNG implements a true random numbers generator.
-//  Copyright (C) 2014 Nicola Cimmino
+//  Copyright (C) 2018 Nicola Cimmino
 //
 //    This program is free software: you can redistribute it and/or modify
 //    it under the terms of the GNU General Public License as published by
@@ -15,21 +16,23 @@
 //    along with this program.  If not, see http://www.gnu.org/licenses/.
 //
 
-#define INPUT_SIGNAL_PIN A0
-
-#define OUTPUT_BLOCK_SIZE 1024
-
-#define PH0 10
-#define PH1 12
-
-// Total amount of random bytes oputput so far.
-uint32_t outputBytes = 0;
+#define PIN_NOISE_IN A0
+#define PIN_CHG_PUMP_SENSE A1
+#define PIN_YELLOW_LED 4
+#define PIN_GREEN_LED 5
+#define PIN_CHG_PUMP0 13
+#define PIN_CHG_PUMP1 11
+#define PIN_CHG_PUMP2 12
+#define CHG_PUMP_LIMIT_HI 320
+#define CHG_PUMP_LIMIT_LO 260
+#define CHG_PUMP_ALARM_DELAY_MS 10000
 
 void setup()
 {
-  Serial.begin(112500);
+  Serial.begin(115200);
 
-  pinMode(INPUT_SIGNAL_PIN, INPUT);
+  pinMode(PIN_NOISE_IN, INPUT);
+  pinMode(PIN_CHG_PUMP_SENSE, INPUT);
 
   // Set ADC prescaler to 16 so we get higher sample
   // rate than with default settings.
@@ -37,16 +40,106 @@ void setup()
   _SFR_BYTE(ADCSRA) &= ~_BV(ADPS1); // Clear ADPS1
   _SFR_BYTE(ADCSRA) &= ~_BV(ADPS0); // Clear ADPS0
 
-  // Use internal 1.1V reference
+  // Use internal 1.1V reference for the A/D converters
+  // since the noise levels we get are rather low.
   analogReference(INTERNAL);
 
-  pinMode(PH0, OUTPUT);
-  pinMode(PH1, OUTPUT);
+  pinMode(PIN_YELLOW_LED, OUTPUT);
+  pinMode(PIN_GREEN_LED, OUTPUT);
 }
 
+/**
+ * Arduino main loop.
+ */
 void loop()
 {
+  // Run the charge pump until the reserviour cap reaches the desired level.
+  runChargePump();
 
+  // The charge pump is not running now, so things are silent and we can start
+  // to generate random numbers, until the reserviour runs low.
+  while (analogRead(PIN_CHG_PUMP_SENSE) > CHG_PUMP_LIMIT_LO)
+  {
+    generateRandomNumbers();
+  }
+}
+
+/**
+ * Run the charge pump until it reaches the preset high level. This function blocks
+ * until the level is reached. Upon return the charge pump is stopped and the reserviour
+ * cap loaded.
+ */
+void runChargePump()
+{
+  setChargePumpOutputsHiZ(false);
+  setChargePumpIndicator(true);
+
+  long chgPumpLevel;
+  unsigned char phase = 0;
+  unsigned long startTime = millis();
+  while ((chgPumpLevel = analogRead(PIN_CHG_PUMP_SENSE)) < CHG_PUMP_LIMIT_HI)
+  {
+    digitalWrite(PIN_CHG_PUMP0, (phase % 2 == 0) ? HIGH : LOW);
+    digitalWrite(PIN_CHG_PUMP1, (phase % 2 == 0) ? LOW : HIGH);
+    digitalWrite(PIN_CHG_PUMP2, (phase % 2 == 0) ? HIGH : LOW);
+    phase++;
+
+    if (millis() - startTime > CHG_PUMP_ALARM_DELAY_MS)
+    {
+      chargePumpAlarmAndHalt(chgPumpLevel);
+    }
+  }
+
+  setChargePumpOutputsHiZ(true);
+  setChargePumpIndicator(false);
+}
+
+/**
+ * Enter charge pump failure alarm mode and halt here.
+ * 
+ * Yellow flashes indicating the fault.
+ */
+void chargePumpAlarmAndHalt(long reachedLevel)
+{
+  setChargePumpOutputsHiZ(true);
+
+  while (true)
+  {
+    digitalWrite(PIN_YELLOW_LED, LOW);
+    delay(800);
+    digitalWrite(PIN_YELLOW_LED, HIGH);
+    delay(200);
+    Serial.print("ALARM_CHARGE_PUMP ");
+    Serial.println(reachedLevel);
+  }
+}
+
+/**
+ * Set the charge pump indicator on/off.
+ * 
+ * Yellow indicates the charge pump is running, green that it's off.
+ */
+void setChargePumpIndicator(bool on)
+{
+  digitalWrite(PIN_YELLOW_LED, on ? HIGH : LOW);
+  digitalWrite(PIN_GREEN_LED, on ? LOW : HIGH);
+}
+
+/**
+ * Set the charge pump output hi impedance.
+ */
+void setChargePumpOutputsHiZ(bool on)
+{
+  pinMode(PIN_CHG_PUMP0, on ? INPUT : OUTPUT);
+  pinMode(PIN_CHG_PUMP1, on ? INPUT : OUTPUT);
+  pinMode(PIN_CHG_PUMP2, on ? INPUT : OUTPUT);
+}
+
+/**
+ * .
+ */
+void generateRandomNumbers()
+{
   // Temporay storage for output random values.
   byte static randomOut = 0;
 
@@ -56,25 +149,17 @@ void loop()
   // Amount of bits produced by the whitening pocess.
   byte static whitenedBitsCount = 0;
 
-  // Current input signal average value.
-  float static average = 0;
-
-  // Collect 8 random bits by keeping track of the
-  // average signal level with a long IIR low pass
-  // and sampling a 1 bit when the current signal is
-  // above the average and 0 otherwise.
+  // Collect 8 random bits by taking two samples and outputting a one
+  // if the sample is higher of the previous.
+  int previousReading = analogRead(PIN_NOISE_IN);
   for (int ix = 0; ix < 8; ix++)
   {
-    // Keep the charge pump running so that
-    // C3 stays above 12v and the zener is
-    // in breakdown.
-    digitalWrite(PH0, (ix % 2 == 0) ? HIGH : LOW);
-    digitalWrite(PH1, (ix % 2 == 0) ? LOW : HIGH);
-    delay(1);
+    delayMicroseconds(100);
+    int noiseReading = analogRead(PIN_NOISE_IN);
 
-    int noiseReading = analogRead(INPUT_SIGNAL_PIN);
-    average = 0.99f * average + 0.01f * noiseReading;
-    randomOut = (randomOut << 1) | ((noiseReading > average) ? 1 : 0);
+    randomOut = (randomOut << 1) | ((noiseReading > previousReading) ? 1 : 0);
+
+    previousReading = noiseReading;
   }
 
   // The data collected so far might be biased, we do some
@@ -99,24 +184,16 @@ void loop()
     }
     randomOut = randomOut >> 2;
   }
-
-  if(outputBytes>=OUTPUT_BLOCK_SIZE)
-   {
-     while(Serial.read()>0);
-     while(!Serial.available());
-     Serial.println("");
-     outputBytes=0;
-   }
 }
 
 /*
- * Output data as two digits HEX, dot separated
- * with 16 bytes per line.
+ * Output data as two digits HEX, dot separated with 16 bytes per line.
  */
 void outputDataHex(byte randomNumber)
 {
+  byte static outputBytes = 0;
   Serial.print("0123456789ABCDEF"[randomNumber >> 4]);
   Serial.print("0123456789ABCDEF"[randomNumber & 0xF]);
-  Serial.print((outputBytes % 32 == 31) ? "\r\n" : "");
+  Serial.print((outputBytes % 32 == 31) ? "\r\n" : ".");
   outputBytes++;
 }
