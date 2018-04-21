@@ -33,6 +33,8 @@ void setup()
 
   pinMode(PIN_NOISE_IN, INPUT);
   pinMode(PIN_CHG_PUMP_SENSE, INPUT);
+  pinMode(PIN_YELLOW_LED, OUTPUT);
+  pinMode(PIN_GREEN_LED, OUTPUT);
 
   // Set ADC prescaler to 16 so we get higher sample
   // rate than with default settings.
@@ -43,9 +45,6 @@ void setup()
   // Use internal 1.1V reference for the A/D converters
   // since the noise levels we get are rather low.
   analogReference(INTERNAL);
-
-  pinMode(PIN_YELLOW_LED, OUTPUT);
-  pinMode(PIN_GREEN_LED, OUTPUT);
 }
 
 /**
@@ -83,6 +82,11 @@ void runChargePump()
     digitalWrite(PIN_CHG_PUMP1, (phase % 2 == 0) ? LOW : HIGH);
     digitalWrite(PIN_CHG_PUMP2, (phase % 2 == 0) ? HIGH : LOW);
     phase++;
+
+    // millis wrapped around, don't get stuck in alarm.
+    if(millis() < startTime) {
+      startTime = millis();
+    }
 
     if (millis() - startTime > CHG_PUMP_ALARM_DELAY_MS)
     {
@@ -136,7 +140,7 @@ void setChargePumpOutputsHiZ(bool on)
 }
 
 /**
- * .
+ * Sample the generated noise and use it to generate a stream of random numbers.
  */
 void generateRandomNumbers()
 {
@@ -154,7 +158,6 @@ void generateRandomNumbers()
   int previousReading = analogRead(PIN_NOISE_IN);
   for (int ix = 0; ix < 8; ix++)
   {
-    delayMicroseconds(100);
     int noiseReading = analogRead(PIN_NOISE_IN);
 
     randomOut = (randomOut << 1) | ((noiseReading > previousReading) ? 1 : 0);
