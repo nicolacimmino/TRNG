@@ -53,37 +53,39 @@ Once enough data is collected the dump file can be converted to binary and analy
     xxd -r -p dump.txt random.bin
     ent random.bin
 
-I made a first analysys o an block of roughly 250KBytes, below the results.
+I made a first analysys o an block of roughly 1MBytes, below the results.
 
-    Entropy = 7.980293 bits per byte.
+    Entropy = 7.980816 bits per byte.
 
     Optimum compression would reduce the size
-    of this 262240 byte file by 0 percent.
+    of this 1105344 byte file by 0 percent.
 
-    Chi square distribution for 262240 samples is 7251.71, and randomly
+    Chi square distribution for 1105344 samples is 29763.73, and randomly
     would exceed this value less than 0.01 percent of the times.
 
-    Arithmetic mean value of data bytes is 127.5408 (127.5 = random).
-    Monte Carlo value for Pi is 3.093762870 (error 1.52 percent).
-    Serial correlation coefficient is -0.001777 (totally uncorrelated = 0.0).
+    Arithmetic mean value of data bytes is 127.3474 (127.5 = random).
+    Monte Carlo value for Pi is 3.099227028 (error 1.35 percent).
+    Serial correlation coefficient is 0.000629 (totally uncorrelated = 0.0).
+
 
 I also generated a file, roughly the same size, containing data from /dev/urand:
 
-    dd if=/dev/urandom of=generated.bin bs=1 count=250000
+    dd if=/dev/urandom of=generated.bin bs=1 count=1100000
 
 This gave the following ent resulsts:
 
-    Entropy = 7.999334 bits per byte.
+    Entropy = 7.999809 bits per byte.
 
     Optimum compression would reduce the size
-    of this 260000 byte file by 0 percent.
+    of this 1100000 byte file by 0 percent.
 
-    Chi square distribution for 260000 samples is 239.42, and randomly
-    would exceed this value 75.02 percent of the times.
+    Chi square distribution for 1100000 samples is 291.69, and randomly
+    would exceed this value 5.68 percent of the times.
 
-    Arithmetic mean value of data bytes is 127.4199 (127.5 = random).
-    Monte Carlo value for Pi is 3.149839614 (error 0.26 percent).
-    Serial correlation coefficient is 0.003364 (totally uncorrelated = 0.0).
+    Arithmetic mean value of data bytes is 127.4345 (127.5 = random).
+    Monte Carlo value for Pi is 3.145991175 (error 0.14 percent).
+    Serial correlation coefficient is -0.000299 (totally uncorrelated = 0.0).
+
 
 ## Photos ##
 
