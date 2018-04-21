@@ -91,7 +91,7 @@ Interstingly the numbers where the peaks are correspond with very distinct patte
     31	00011111
     63	00111111
     127	01111111
-    128 10000000
+    127	10000000
     192	11000000
     224	11100000
     240	11110000
