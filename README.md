@@ -25,11 +25,23 @@ Below is a screenshot of the noise measured at NOUT.
 
 ![Scope](documentation/noise.png)
 
-And below is the assembled protorype with the noise source and an Arduino Nano.
+## Random Numbers Generation ##
 
-![Proto](documentation/proto2.png)
+Once the noise is sampled it gets converted to a train of 0s and 1s by taking successive samples and comparing them with the previous one. If the current sample is higher then a one is inserted in the stream otherwise a zero. The signal at this point is random but might be biased. To reduce bias I have processed the stream with John von Neumann whitening algoirthm. This consumes 2+ bits to generate one bit, so the speed of data output varies depending on the bias of the original stream. The algorithm fundamentally takes couples of bits and discards them if they are the same. It does output instead a 1 if the bits are "10" and a zero if they are "01", this doesn't enhance the randomness of the data but reduces the bias towards one or zero that the data might have.
 
-Once the noise is sampled it gets converted to a train of 0s and 1s by taking successive samples and comparing them with the previous sample. If the current value is above then a one is inserted in the stream otherwise a zero. This approach allows to compesate eventual drifts in levels due to temperature or aging. The signal at this point is random but might be biased. To reduce bias I have processed the stream with John von Neumann whitening algoirthm. This consumes 2+ bits to generate one bit, so the speed of data output varies depending on the bias of the original stream. The algorithm fundamentally takes couples of bits and discards them if they are same. It does output instead a 1 if the bits are "10" and a zero if they are "01", this doesn't enhance the randomness of the data but reduces the bias towards one or zero that the data might have.
+## Validation ##
+
+First of all I needed to make sure the noise I was seeing was coming from the zener and not from other sources on the board which, most likely, wouldn't be random due to the regularly repetitive nature of most signals on the board. To do this I have changed the software to not run the charge pump, after the first round, this caused the voltage on the reserviour capacitor C6 to slowly decrease, while all the other signals on the board were still as they are in normal operation. I could confirm the noise slowly decreased as C6 voltage dropped proving the source is the zener and not leackage from the digital circuits.
+
+I proceeded then to analyze the data generated for randomness. The software outputs the randomly generated numbers on the serial port in HEX dump format. So they can be first of collected in a dump file in this way:
+
+    stty -F /dev/ttyUSB0 115200
+    cat /dev/ttyUSB0 | tee dump.txt
+
+Once enough data is collected the dump file can be converted to binary and analyzed with "ent":
+
+    xxd -r -p dump.txt random.bin
+    ent random.bin
 
 I made a first analysys o an block of roughly 250KBytes, below the results.
 
@@ -45,3 +57,26 @@ I made a first analysys o an block of roughly 250KBytes, below the results.
     Monte Carlo value for Pi is 3.093762870 (error 1.52 percent).
     Serial correlation coefficient is -0.001777 (totally uncorrelated = 0.0).
 
+I also generated a file, roughly the same size, containing data from /dev/urand:
+
+    dd if=/dev/urandom of=generated.bin bs=1 count=250000
+
+This gave the following ent resulsts:
+
+    Entropy = 7.999334 bits per byte.
+
+    Optimum compression would reduce the size
+    of this 260000 byte file by 0 percent.
+
+    Chi square distribution for 260000 samples is 239.42, and randomly
+    would exceed this value 75.02 percent of the times.
+
+    Arithmetic mean value of data bytes is 127.4199 (127.5 = random).
+    Monte Carlo value for Pi is 3.149839614 (error 0.26 percent).
+    Serial correlation coefficient is 0.003364 (totally uncorrelated = 0.0).
+
+## Photos ##
+
+Below is the assembled protorype with the noise source and an Arduino Nano.
+
+![Proto](documentation/proto2.png)
