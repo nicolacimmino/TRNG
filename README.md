@@ -1,4 +1,6 @@
 
+# TRNG #
+
 The goal of this project is to develop a True Random Number Generator. For the noise source I chose to use a zener diode. I made a first attempt with a low voltage one (3.8V), but I couldn't get satisfactory levels of noise. I move then to the more tried and tested higer voltage zeners (12V) which, working on the avalnche effect, produce might higher levels of noise.
 
 Below is the schematic of the analog circuitry which is then hooked up an Arduino board that takes care to run it and sample the noise. 
@@ -13,8 +15,13 @@ In software the charge pump is controlled by the function runChargePump(). This 
 
 ## The noise source ##
 
-The output of the charge pump is used to reverse bias the 12V zener diode D1 through the 530K resistor R1. The value of the resistor was determined empirically to be the one providing the best noise levels. The value of R1 also depends on the rest of the circuitry that loads the noise source.
+The output of the charge pump is used to reverse bias the 12V zener diode D1 through the 530K resistor R1. The value of the resistor was determined empirically to be the one providing the best noise levels. The value of R1 also depends on the rest of the circuitry that loads the noise source, in general an higher value will mean an higher voltage fluctuation for a give current fluctuation in the zener. At the same time this raises the impedance of the noise source, so will weaken the signal when loaded. 
 
+C1 decuples the DC and lets the noise reach Q1. Q1, with R3 and R2, is configured as an emitter follower and has the sole purpose to reduce the source impedance. Finally U1, a AD818 OpAmp, provides roughly a 30x amplification. C5 decouples the DC and presents the noise finally to the A/D for sampling.
+
+NOTE: The noise at this point will be centered around 0V, this means that the lower portion will be lost by the A/D. It would be possible to get rid of C5 and play with the AD818 offset pins to get the DC somewhere half way of the A/D fullscale, this would give a 3dB boost to the signal seen in the digital world.
+
+Below is a screenshot of the noise measured at NOUT.
 
 ![Scope](documentation/noise.png)
 
@@ -22,7 +29,7 @@ And below is the assembled protorype with the noise source and an Arduino Nano.
 
 ![Proto](documentation/proto2.png)
 
-Once the noise is sampled it gets converted to a train of 0s and 1s by taking successive samples and comparing them with an average of the last samples. If the current value is above then a one is inserted in the stream otherwise a zero. This approach allows to compesate eventual drifts in levels due to temperature or aging. The signal at this point is random but might be biased. To reduce bias I have processed the stream with John von Neumann whitening algoirthm. This consumes 2+ bits to generate one bit, so the speed of data output varies depending on the bias of the original stream. The algorithm fundamentally takes couples of bits and discards them if they are same. It does output instead a 1 if the bits are "10" and a zero if they are "01", this doesn't enhance the randomness of the data but reduces the bias towards one or zero that the data might have.
+Once the noise is sampled it gets converted to a train of 0s and 1s by taking successive samples and comparing them with the previous sample. If the current value is above then a one is inserted in the stream otherwise a zero. This approach allows to compesate eventual drifts in levels due to temperature or aging. The signal at this point is random but might be biased. To reduce bias I have processed the stream with John von Neumann whitening algoirthm. This consumes 2+ bits to generate one bit, so the speed of data output varies depending on the bias of the original stream. The algorithm fundamentally takes couples of bits and discards them if they are same. It does output instead a 1 if the bits are "10" and a zero if they are "01", this doesn't enhance the randomness of the data but reduces the bias towards one or zero that the data might have.
 
 I made a first analysys o an block of roughly 250KBytes, below the results.
 
