@@ -1,9 +1,20 @@
 
-The goal of this project is to develop a true random number generator. I made a first attempt to use a low voltage zener diode, a 3.8v one. I knew these diodes don't work on avalanche effect as the higher voltage ones the hope was to get enough noise to amplify with an LNA and use the noise as source of entropy. I soon realized I wasn't getting any noise at all but only leaked signal from the processor was being amplfieid. So I decided to go back to the well known higer voltage zeners and selected a 12v one. As the Arduino runs as 5v I added a charge pump to create a voltage slightly over 12 so the diode could be driven in breakdown. The schematic can be seen below.
+The goal of this project is to develop a True Random Number Generator. For the noise source I chose to use a zener diode. I made a first attempt with a low voltage one (3.8V), but I couldn't get satisfactory levels of noise. I move then to the more tried and tested higer voltage zeners (12V) which, working on the avalnche effect, produce might higher levels of noise.
+
+Below is the schematic of the analog circuitry which is then hooked up an Arduino board that takes care to run it and sample the noise. 
 
 ![Schematic](documentation/schematic2.png)
 
-This produced eventually a scope trace that looks much more as noise. I don't have at the moment a frequency analysis of the source. The amplitude is about 50mVpp, but since this is centered around ground it only leaves about 25mV usable for the A/D convesion, since the A/D will clip negative voltages. With the A/D reference set to the internal 1.1v source and 10-bits resolution this leaves around 4.6 bits dynamic range, not a lot, since at least the lsb could be biased by internal noise. As a first iteration I will settle for this anyway and eventually add an amplifier later.
+## The charge pump ##
+
+The only available voltage is the 5V provided by the USB supply so I needed to first of all get a higher voltage to be able to run the zener close to its reverse breakdown voltage. I used a charge pump to get the higher voltage. The pump is made up of the schottky diodes D2-D5, C2-C4, C6 and L1. Under software control, PH0-2 alternate between 5v and 0v. If we assume PH0 starts at 0v then C2 will charge at 5V through D2. When then PH0 switches to 5V the junction between C2 and D2 will be lifted to 10V (5V PH0 plust 5V across C2), at the same time D2 prevents current to flow back to the 5V rail and discharge C2. If PH1 is at this point at 0V current can flow from C2 to C3 instead, through D3. This will charge C3 to 10V. The process repeats with C3 raising to 15V when PH1 goes to 5V and so on. In an ideal circuit you would get 20V at the output, though there are losses in the diodes so I'm getting about 17V. L1 is not critical but I found the final stable voltage of the charge pump went few volts higher with it. There is a closed loop control of the output voltage provided by feeding a portion of the voltage through R7/R8 to the board A/D converter.
+
+In software the charge pump is controlled by the function runChargePump(). This takes care to sequence PH0-2 as needed until the desired voltage level is reached at the reservouir capacitor C6. This function also takes care to control the status lights that show the status of the charge pump. There is an alarm state the system can enter if the desired voltage is not reached within a certain time. Once the voltage is reached, or the alarm is entered, PH0-2 are turned into high impedance inputs. At this stage, unless the alarm mode has been entered, the noise sampling can happen, being the charge pump stopped guarantees a lower noise level.
+
+## The noise source ##
+
+The output of the charge pump is used to reverse bias the 12V zener diode D1 through the 530K resistor R1. The value of the resistor was determined empirically to be the one providing the best noise levels. The value of R1 also depends on the rest of the circuitry that loads the noise source.
+
 
 ![Scope](documentation/noise.png)
 
