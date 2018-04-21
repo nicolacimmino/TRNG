@@ -38,9 +38,9 @@ void setup()
 
   // Set ADC prescaler to 16 so we get higher sample
   // rate than with default settings.
-  _SFR_BYTE(ADCSRA) |= _BV(ADPS2);  // Set ADPS2
-  _SFR_BYTE(ADCSRA) &= ~_BV(ADPS1); // Clear ADPS1
-  _SFR_BYTE(ADCSRA) &= ~_BV(ADPS0); // Clear ADPS0
+  // _SFR_BYTE(ADCSRA) |= _BV(ADPS2);  // Set ADPS2
+  // _SFR_BYTE(ADCSRA) &= ~_BV(ADPS1); // Clear ADPS1
+  // _SFR_BYTE(ADCSRA) &= ~_BV(ADPS0); // Clear ADPS0
 
   // Use internal 1.1V reference for the A/D converters
   // since the noise levels we get are rather low.
