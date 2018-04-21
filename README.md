@@ -67,26 +67,7 @@ I made a first analysys o an block of roughly 1MBytes, below the results.
     Monte Carlo value for Pi is 3.099227028 (error 1.35 percent).
     Serial correlation coefficient is 0.000629 (totally uncorrelated = 0.0).
 
-
-I also generated a file, roughly the same size, containing data from /dev/urand:
-
-    dd if=/dev/urandom of=generated.bin bs=1 count=1100000
-
-This gave the following ent resulsts:
-
-    Entropy = 7.999809 bits per byte.
-
-    Optimum compression would reduce the size
-    of this 1100000 byte file by 0 percent.
-
-    Chi square distribution for 1100000 samples is 291.69, and randomly
-    would exceed this value 5.68 percent of the times.
-
-    Arithmetic mean value of data bytes is 127.4345 (127.5 = random).
-    Monte Carlo value for Pi is 3.145991175 (error 0.14 percent).
-    Serial correlation coefficient is -0.000299 (totally uncorrelated = 0.0).
-
-Numbers don't look good. Particularly the chi square distribution look very bad. So I started to toy around with the numbers seeing if I could find something odd and this struck as clearly wrong:
+Numbers don't look good. Particularly the chi square distribution looks very bad. So I started to toy around with the numbers seeing if I could find something odd and this struck as clearly wrong:
 
     grep 00 tmp.txt | wc -l
     5927
@@ -100,10 +81,20 @@ Numbers don't look good. Particularly the chi square distribution look very bad.
     grep 55 tmp.txt | wc -l
     2698
 
-AA and FF were half as likely than 00 and FF!. When I plotted the frequency of each number it soon became obvious there is a clear pattern:
+AA and 55 were half as likely than 00 and FF! When I plotted the frequency of each number it soon became obvious there is a clear pattern:
 
 ![Distribution](documentation/distribution.png)
 
+Interstingly the numbers where the peaks are correspond with very distinct patterns:
+
+    15	00001111
+    31	00011111
+    63	00111111
+    127	01111111
+    127	10000000
+    192	11000000
+    224	11100000
+    240	11110000
 
 ## Photos ##
 
