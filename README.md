@@ -100,10 +100,20 @@ Numbers don't look good. Particularly the chi square distribution look very bad.
     grep 55 tmp.txt | wc -l
     2698
 
-AA and FF were half as likely than 00 and FF!. When I plotted the frequency of each number it soon became obvious there is a clear pattern:
+AA and 55 were half as likely than 00 and FF! When I plotted the frequency of each number it soon became obvious there is a clear pattern:
 
 ![Distribution](documentation/distribution.png)
 
+Interstingly the numbers where the peaks are correspond with very distinct patterns:
+
+    15	00001111
+    31	00011111
+    63	00111111
+    127	01111111
+    128 10000000
+    192	11000000
+    224	11100000
+    240	11110000
 
 ## Photos ##
 
