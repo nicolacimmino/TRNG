@@ -86,6 +86,24 @@ This gave the following ent resulsts:
     Monte Carlo value for Pi is 3.145991175 (error 0.14 percent).
     Serial correlation coefficient is -0.000299 (totally uncorrelated = 0.0).
 
+Numbers don't look good. Particularly the chi square distribution look very bad. So I started to toy around with the numbers seeing if I could find something odd and this struck as clearly wrong:
+
+    grep 00 tmp.txt | wc -l
+    5927
+
+    grep FF tmp.txt | wc -l
+    5968
+    
+    grep AA tmp.txt | wc -l
+    2649
+
+    grep 55 tmp.txt | wc -l
+    2698
+
+AA and FF were half as likely than 00 and FF!. When I plotted the frequency of each number it soon became obvious there is a clear pattern:
+
+![Distribution](documentation/distribution.png)
+
 
 ## Photos ##
 
