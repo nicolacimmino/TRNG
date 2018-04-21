@@ -13,16 +13,17 @@ And below is the assembled protorype with the noise source and an Arduino Nano.
 
 Once the noise is sampled it gets converted to a train of 0s and 1s by taking successive samples and comparing them with an average of the last samples. If the current value is above then a one is inserted in the stream otherwise a zero. This approach allows to compesate eventual drifts in levels due to temperature or aging. The signal at this point is random but might be biased. To reduce bias I have processed the stream with John von Neumann whitening algoirthm. This consumes 2+ bits to generate one bit, so the speed of data output varies depending on the bias of the original stream. The algorithm fundamentally takes couples of bits and discards them if they are same. It does output instead a 1 if the bits are "10" and a zero if they are "01", this doesn't enhance the randomness of the data but reduces the bias towards one or zero that the data might have.
 
-I made a first analysys o an admittedly small block of 1K of data. I currently have to cut and paste the values from a terminal application to an HEX editor, I will soon add a small utility to collect directly to file so I can gather a larger sample to analyze. The results of the ENT tests are reported below.
+I made a first analysys o an block of roughly 250KBytes, below the results.
 
+    Entropy = 7.980293 bits per byte.
 
-    Entropy = 7.934235 bits per byte.
-    Optimum compression would reduce the size of this 4096 byte file by 0 percent.
-    
-    Chi square distribution for 4096 samples is 377.63, 
-    and randomly would exceed this value less than 0.01 percent of the times.
-    
-    Arithmetic mean value of data bytes is 134.2920 (127.5 = random).
-    Monte Carlo value for Pi is 3.131964809 (error 0.31 percent).
-    Serial correlation coefficient is 0.008755 (totally uncorrelated = 0.0).
-    
+    Optimum compression would reduce the size
+    of this 262240 byte file by 0 percent.
+
+    Chi square distribution for 262240 samples is 7251.71, and randomly
+    would exceed this value less than 0.01 percent of the times.
+
+    Arithmetic mean value of data bytes is 127.5408 (127.5 = random).
+    Monte Carlo value for Pi is 3.093762870 (error 1.52 percent).
+    Serial correlation coefficient is -0.001777 (totally uncorrelated = 0.0).
+
