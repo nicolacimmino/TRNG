@@ -87,14 +87,19 @@ AA and 55 were half as likely than 00 and FF! When I plotted the frequency of ea
 
 Interstingly the numbers where the peaks are correspond with very distinct patterns:
 
+    0	00000000
+    3	00000011
+    7	00000111
     15	00001111
     31	00011111
     63	00111111
     127	01111111
-    127	10000000
     192	11000000
     224	11100000
     240	11110000
+    248	11111000
+    252	11111100
+    255	11111111
 
 ## Photos ##
 
