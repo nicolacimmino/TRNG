@@ -101,6 +101,21 @@ Interstingly the numbers where the peaks are correspond with very distinct patte
     252	11111100
     255	11111111
 
+I was sure this was a software issue more than a problem with the actual noise, at first I concentrated my tests more on the whitening and even the conversion to HEX at some point. I neglected though a tiny but fundamental error. When building the bitstream I was using **analogValue | 1** to pick the lsb....well **analogValue & 1** is a much better idea. I must have checked that code at least 10 times, but you clearly become blind at some point. Things look much brighter now, though this is still a rather small sample Chi Square is definitively consistently between 40% and 70%.
+ 
+    Entropy = 7.996508 bits per byte.
+
+    Optimum compression would reduce the size
+    of this 52512 byte file by 0 percent.
+
+    Chi square distribution for 52512 samples is 252.22, and randomly
+    would exceed this value 53.75 percent of the times.
+
+    Arithmetic mean value of data bytes is 127.3696 (127.5 = random).
+    Monte Carlo value for Pi is 3.120201097 (error 0.68 percent).
+    Serial correlation coefficient is -0.000092 (totally uncorrelated = 0.0).
+
+
 ## Photos ##
 
 Below is the assembled protorype with the noise source and an Arduino Nano.
