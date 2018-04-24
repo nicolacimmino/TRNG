@@ -27,6 +27,12 @@
 #define CHG_PUMP_LIMIT_LO 260
 #define CHG_PUMP_ALARM_DELAY_MS 10000
 
+// Tempoary storage for output from the whitening process.
+byte whitenedOut = 0;
+
+// Amount of bits produced by the whitening pocess.
+byte whitenedBitsCount = 0;
+
 void setup()
 {
   Serial.begin(115200);
@@ -35,12 +41,6 @@ void setup()
   pinMode(PIN_CHG_PUMP_SENSE, INPUT);
   pinMode(PIN_YELLOW_LED, OUTPUT);
   pinMode(PIN_GREEN_LED, OUTPUT);
-
-  // Set ADC prescaler to 16 so we get higher sample
-  // rate than with default settings.
-  // _SFR_BYTE(ADCSRA) |= _BV(ADPS2);  // Set ADPS2
-  // _SFR_BYTE(ADCSRA) &= ~_BV(ADPS1); // Clear ADPS1
-  // _SFR_BYTE(ADCSRA) &= ~_BV(ADPS0); // Clear ADPS0
 
   // Use internal 1.1V reference for the A/D converters
   // since the noise levels we get are rather low.
@@ -84,7 +84,8 @@ void runChargePump()
     phase++;
 
     // millis wrapped around, don't get stuck in alarm.
-    if(millis() < startTime) {
+    if (millis() < startTime)
+    {
       startTime = millis();
     }
 
@@ -144,25 +145,17 @@ void setChargePumpOutputsHiZ(bool on)
  */
 void generateRandomNumbers()
 {
-  // Temporay storage for output random values.
-  byte static randomOut = 0;
-
-  // Tempoary storage for output from the whitening process.
-  byte static whitenedOut = 0;
-
-  // Amount of bits produced by the whitening pocess.
-  byte static whitenedBitsCount = 0;
-
-  // Collect 8 random bits by taking two samples and outputting a one
-  // if the sample is higher of the previous.
-  int previousReading = analogRead(PIN_NOISE_IN);
-  for (int ix = 0; ix < 8; ix++)
+  int analogValue = 0;
+  uint32_t sampledNoise = 0;
+  for (int ix = 0; ix < 32; ix++)
   {
-    int noiseReading = analogRead(PIN_NOISE_IN);
+    analogValue = 0;
+    while (analogValue == 0)
+    {
+      analogValue = analogRead(PIN_NOISE_IN);
+    }
 
-    randomOut = (randomOut << 1) | ((noiseReading > previousReading) ? 1 : 0);
-
-    previousReading = noiseReading;
+    sampledNoise = (sampledNoise << 1) | (analogValue & 1);
   }
 
   // The data collected so far might be biased, we do some
@@ -173,11 +166,11 @@ void generateRandomNumbers()
   // if they are equal they are discarded if they are "10" then
   // a 1 is taken as output, if they are "01" then 0 is taken
   // as output.
-  for (int ix = 0; ix < 8; ix += 2)
+  for (int ix = 0; ix < 32; ix += 2)
   {
-    if ((randomOut & 1) != ((randomOut >> 1) & 1))
+    if ((sampledNoise & 1) != ((sampledNoise >> 1) & 1))
     {
-      whitenedOut = (whitenedOut << 1) | (randomOut & 1);
+      whitenedOut = (whitenedOut << 1) | (sampledNoise & 1);
       whitenedBitsCount++;
       if (whitenedBitsCount == 8)
       {
@@ -185,7 +178,7 @@ void generateRandomNumbers()
         whitenedBitsCount = 0;
       }
     }
-    randomOut = randomOut >> 2;
+    sampledNoise = sampledNoise >> 2;
   }
 }
 
@@ -195,8 +188,8 @@ void generateRandomNumbers()
 void outputDataHex(byte randomNumber)
 {
   byte static outputBytes = 0;
-  Serial.print("0123456789ABCDEF"[randomNumber >> 4]);
+  Serial.print("0123456789ABCDEF"[(randomNumber >> 4) & 0xF]);
   Serial.print("0123456789ABCDEF"[randomNumber & 0xF]);
-  Serial.print((outputBytes % 32 == 31) ? "\r\n" : ".");
+  Serial.print((outputBytes % 32 == 31) ? "\n" : ".");
   outputBytes++;
 }
