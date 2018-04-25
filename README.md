@@ -85,6 +85,8 @@ The same file analyzed as bytes:
 
 The system currently generates roughly 39Kbits/s.
 
+Dieharder tests results [here](dieharder.md)
+
 ## Photos ##
 
 Below is the assembled protorype with the noise source and an Arduino Nano.
