@@ -1,8 +1,11 @@
 
+## Project Log ##
 
-First of all I needed to make sure the noise I was seeing was coming from the zener and not from other sources on the board which, most likely, wouldn't be random due to the regularly repetitive nature of most signals on the board. To do this I have changed the software to not run the charge pump, after the first round, this caused the voltage on the reserviour capacitor C6 to slowly decrease, while all the other signals on the board were still as they are in normal operation. I could confirm the noise slowly decreased as C6 voltage dropped proving the source is the zener and not leackage from the digital circuits.
+The project started, at first, with a low voltage zener in the hope to leverage the 5V supply on board. This proved not to give enough noise so I upgraded the hardware to include a charge pump to produce roughly 17V.
 
-I proceeded then to analyze the data generated for randomness. The software outputs the randomly generated numbers on the serial port in HEX dump format. So they can be first of collected in a dump file in this way:
+Once I got the analog part working and confirmed with a scope I was seeing noise I had to start to validate the results and tweak the software.
+
+I proceeded to analyze the data generated, by a first iteration of the code, for randomness. The software outputs the randomly generated numbers on the serial port in HEX dump format. So they can be first of collected in a dump file in this way:
 
     stty -F /dev/ttyUSB0 115200
     cat /dev/ttyUSB0 | tee dump.txt
@@ -26,7 +29,7 @@ I made a first analysys o an block of roughly 1MBytes, below the results.
     Monte Carlo value for Pi is 3.099227028 (error 1.35 percent).
     Serial correlation coefficient is 0.000629 (totally uncorrelated = 0.0).
 
-Numbers don't look good. Particularly the chi square distribution looks very bad. So I started to toy around with the numbers seeing if I could find something odd and this struck as clearly wrong:
+Numbers don't look good. Particularly the chi square test result looks very bad. So I started to toy around with the numbers seeing if I could find something odd and this struck as clearly wrong:
 
     grep 00 tmp.txt | wc -l
     5927
@@ -40,7 +43,11 @@ Numbers don't look good. Particularly the chi square distribution looks very bad
     grep 55 tmp.txt | wc -l
     2698
 
-AA and 55 were half as likely than 00 and FF! When I plotted the frequency of each number it soon became obvious there is a clear pattern:
+AA and 55 were half as likely than 00 and FF! I didn't find these numbers by chanche, they are quite sensible numbers to check first as the are the two extremes (00 and FF are all equal bits, while AA and 55 are all alternating bits). So I plotted the frequency of each number which can be done with:
+
+    ent -c -t random.bin
+    
+This outputs the occurences of each number in a CSV format, which can the easily visualised in a spredsheet. It soon became obvious there is a clear pattern:
 
 ![Distribution](documentation/distribution.png)
 
