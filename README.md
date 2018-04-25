@@ -83,6 +83,8 @@ The same file analyzed as bytes:
     Monte Carlo value for Pi is 3.133372781 (error 0.26 percent).
     Serial correlation coefficient is -0.000240 (totally uncorrelated = 0.0).
 
+The system currently generates roughly 39Kbits/s.
+
 ## Photos ##
 
 Below is the assembled protorype with the noise source and an Arduino Nano.
