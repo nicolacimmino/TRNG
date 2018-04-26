@@ -85,6 +85,10 @@ The same file analyzed as bytes:
 
 The system currently generates roughly 39Kbits/s.
 
+You can pipe the output directly to dieharder after converting the hexdump to bin:
+
+    cat /dev/ttyUSB0 | xxd -r | dieharder -a
+    
 Dieharder tests results [here](dieharder.md)
 
 ## Photos ##
