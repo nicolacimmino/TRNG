@@ -91,6 +91,8 @@ You can pipe the output directly to dieharder after converting the hexdump to bi
     
 Dieharder tests results [here](dieharder.md)
 
+![Distribution](documentation/distribution_good.png)
+
 ## Photos ##
 
 Below is the assembled protorype with the noise source and an Arduino Nano.
