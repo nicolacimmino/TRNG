@@ -33,6 +33,9 @@ byte whitenedOut = 0;
 // Amount of bits produced by the whitening pocess.
 byte whitenedBitsCount = 0;
 
+/**
+ * Arduino setup.
+ */
 void setup()
 {
   Serial.begin(115200);
@@ -52,12 +55,11 @@ void setup()
  */
 void loop()
 {
-  // Run the charge pump until the reserviour cap reaches the desired level.
-  runChargePump();
+  chargeHighVoltageReserviour();
 
   // The charge pump is not running now, so things are silent and we can start
   // to generate random numbers, until the reserviour runs low.
-  while (analogRead(PIN_CHG_PUMP_SENSE) > CHG_PUMP_LIMIT_LO)
+  while (isHighVoltageReseviourAboveMin())
   {
     generateRandomNumbers();
   }
@@ -68,7 +70,7 @@ void loop()
  * until the level is reached. Upon return the charge pump is stopped and the reserviour
  * cap loaded.
  */
-void runChargePump()
+void chargeHighVoltageReserviour()
 {
   setChargePumpOutputsHiZ(false);
   setChargePumpIndicator(true);
@@ -97,6 +99,11 @@ void runChargePump()
 
   setChargePumpOutputsHiZ(true);
   setChargePumpIndicator(false);
+}
+
+bool isHighVoltageReseviourAboveMin()
+{
+  return analogRead(PIN_CHG_PUMP_SENSE) > CHG_PUMP_LIMIT_LO;
 }
 
 /**
@@ -141,22 +148,11 @@ void setChargePumpOutputsHiZ(bool on)
 }
 
 /**
- * Sample the generated noise and use it to generate a stream of random numbers.
+ * Sample the generated noise and use it to create a stream of random numbers.
  */
 void generateRandomNumbers()
 {
-  int analogValue = 0;
-  uint32_t sampledNoise = 0;
-  for (int ix = 0; ix < 32; ix++)
-  {
-    analogValue = 0;
-    while (analogValue == 0)
-    {
-      analogValue = analogRead(PIN_NOISE_IN);
-    }
-
-    sampledNoise = (sampledNoise << 1) | (analogValue & 1);
-  }
+  uint32_t sampledNoise = sampleNoise();
 
   // The data collected so far might be biased, we do some
   // whitening applying John von Neumann whitening algoirthm.
@@ -182,14 +178,33 @@ void generateRandomNumbers()
   }
 }
 
+/**
+ * Sample 32 bits from the analog noise source.
+ */
+uint32_t sampleNoise()
+{
+  int analogValue = 0;
+  uint32_t sampledNoise = 0;
+  for (int ix = 0; ix < 32; ix++)
+  {
+    analogValue = 0;
+    while (analogValue == 0)
+    {
+      analogValue = analogRead(PIN_NOISE_IN);
+    }
+
+    sampledNoise = (sampledNoise << 1) | (analogValue & 1);
+  }
+
+  return sampledNoise;
+}
+
 /*
  * Output data as two digits HEX, dot separated with 16 bytes per line.
  */
 void outputDataHex(byte randomNumber)
 {
-  byte static outputBytes = 0;
   Serial.print("0123456789ABCDEF"[(randomNumber >> 4) & 0xF]);
   Serial.print("0123456789ABCDEF"[randomNumber & 0xF]);
-  Serial.print((outputBytes % 32 == 31) ? "\n" : ".");
-  outputBytes++;
+  Serial.print(".");
 }
