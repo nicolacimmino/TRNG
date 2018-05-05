@@ -16,11 +16,11 @@ Below is an analysys of the raw bitstream, as collected from the ADC by sampling
 | 4    | 7.960437 | 1676.55     | 0.01%      | 137.1584   | 2.925755    | 0.005780           | 0.537758       |
 | 5    | 7.961682 | 1618.99     | 0.01%      | 137.3476   | 2.912147    |-0.002330           | 0.537366       |
 
-While the entropy and serial correlation values are good all the other values are not. From the mean value and the 1s probability we can determine this is just due to bias towards 1s. This is also visually confirmed by the probability distribution graph below. The staggered curve raises is due to the higer probability of numbers containing more 1s.
+While the entropy and serial correlation values are good all the other values are not. From the mean value and the 1s probability we can determine this is just due to bias towards 1s. This is also visually confirmed by the probability distribution graph below. The staggered curve, which also raises towards right, is due to the higer probability of numbers containing more 1s. Note also the sharp drop at 127 -> 128 (b01111111 -> b10000000).
 
 ![Probability Distribution](../documentation/prob_distr_rbs05.png)
 
-# Withened Bit Stream #
+# Whitened Bit Stream #
 
 | #    | Entropy  | Chi^2 Dist. | Chi^2 %    | Mean Value | MC Pi       | Serial Correlation | 1s probability |
 |:----:|---------:|------------:|-----------:|-----------:|------------:|-------------------:|---------------:|
@@ -39,7 +39,7 @@ While the entropy and serial correlation values are good all the other values ar
 |--------|-------|-----|---------------------------------------|
 | nogen  | 0     | N/A | Charge pump not running, no output.   |
 | rawbs | 15.0      |     | Only lsb sampled and appended to stream.  |
-| whtbs | 4.3    | | As above withened with Von Neumann |
+| whtbs | 4.3    | | As above whitened with Von Neumann |
 
 | CRC32  | 16    | OK  | As above plus CRC32 extractor.        |
 
