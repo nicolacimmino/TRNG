@@ -1,5 +1,3 @@
-#include <CRC32.h>
-
 // TRNG implements a true random numbers generator.
 //  Copyright (C) 2018 Nicola Cimmino
 //
@@ -18,17 +16,6 @@
 //
 
 #define PIN_NOISE_IN A0
-#define PIN_CHG_PUMP_SENSE A1
-#define PIN_YELLOW_LED 4
-#define PIN_GREEN_LED 5
-#define PIN_CHG_PUMP0 13
-#define PIN_CHG_PUMP1 11
-#define PIN_CHG_PUMP2 12
-#define CHG_PUMP_LIMIT_HI 320
-#define CHG_PUMP_LIMIT_LO 260
-#define CHG_PUMP_ALARM_DELAY_MS 10000
-
-CRC32 crc;
 
 /**
  * Arduino setup.
@@ -37,19 +24,7 @@ void setup()
 {
   Serial.begin(115200);
 
-  //  Set ADC prescaler to 16 so we get higher sample rate than with default settings.
-  _SFR_BYTE(ADCSRA) |= _BV(ADPS2);  // Set ADPS2
-  _SFR_BYTE(ADCSRA) &= ~_BV(ADPS1); // Clear ADPS1
-  _SFR_BYTE(ADCSRA) &= ~_BV(ADPS0); // Clear ADPS0
-
-  pinMode(PIN_NOISE_IN, INPUT);
-  pinMode(PIN_CHG_PUMP_SENSE, INPUT);
-  pinMode(PIN_YELLOW_LED, OUTPUT);
-  pinMode(PIN_GREEN_LED, OUTPUT);
-
-  // Use internal 1.1V reference for the A/D converters
-  // since the noise levels we get are rather low.
-  analogReference(INTERNAL);
+  initChargePump();
 }
 
 /**
@@ -63,115 +38,15 @@ void loop()
   // to generate random numbers, until the reserviour runs low.
   while (isHighVoltageReseviourAboveMin())
   {
-    outputRandomNumbers();
+    uint8_t randomByte = sample8BitsWhitenedNoise();
+    outputDataHex(randomByte);
   }
 }
 
 /**
- * Run the charge pump until it reaches the preset high level. This function blocks
- * until the level is reached. Upon return the charge pump is stopped and the reserviour
- * cap loaded.
- */
-void chargeHighVoltageReserviour()
-{
-  setChargePumpOutputsHiZ(false);
-  setChargePumpIndicator(true);
-
-  long chgPumpLevel;
-  unsigned char phase = 0;
-  unsigned long startTime = millis();
-  while ((chgPumpLevel = analogRead(PIN_CHG_PUMP_SENSE)) < CHG_PUMP_LIMIT_HI)
-  {
-    digitalWrite(PIN_CHG_PUMP0, (phase % 2 == 0) ? HIGH : LOW);
-    digitalWrite(PIN_CHG_PUMP1, (phase % 2 == 0) ? LOW : HIGH);
-    digitalWrite(PIN_CHG_PUMP2, (phase % 2 == 0) ? HIGH : LOW);
-    phase++;
-
-    // millis wrapped around, don't get stuck in alarm.
-    if (millis() < startTime)
-    {
-      startTime = millis();
-    }
-
-    if (millis() - startTime > CHG_PUMP_ALARM_DELAY_MS)
-    {
-      chargePumpAlarmAndHalt(chgPumpLevel);
-    }
-  }
-
-  setChargePumpOutputsHiZ(true);
-  setChargePumpIndicator(false);
-}
-
-bool isHighVoltageReseviourAboveMin()
-{
-  return analogRead(PIN_CHG_PUMP_SENSE) > CHG_PUMP_LIMIT_LO;
-}
-
-/**
- * Enter charge pump failure alarm mode and halt here.
- * 
- * Yellow flashes indicating the fault.
- */
-void chargePumpAlarmAndHalt(long reachedLevel)
-{
-  setChargePumpOutputsHiZ(true);
-
-  while (true)
-  {
-    digitalWrite(PIN_YELLOW_LED, LOW);
-    delay(800);
-    digitalWrite(PIN_YELLOW_LED, HIGH);
-    delay(200);
-    Serial.print("ALARM_CHARGE_PUMP ");
-    Serial.println(reachedLevel);
-  }
-}
-
-/**
- * Set the charge pump indicator on/off.
- * 
- * Yellow indicates the charge pump is running, green that it's off.
- */
-void setChargePumpIndicator(bool on)
-{
-  digitalWrite(PIN_YELLOW_LED, on ? HIGH : LOW);
-  digitalWrite(PIN_GREEN_LED, on ? LOW : HIGH);
-}
-
-/**
- * Set the charge pump output hi impedance.
- */
-void setChargePumpOutputsHiZ(bool on)
-{
-  pinMode(PIN_CHG_PUMP0, on ? INPUT : OUTPUT);
-  pinMode(PIN_CHG_PUMP1, on ? INPUT : OUTPUT);
-  pinMode(PIN_CHG_PUMP2, on ? INPUT : OUTPUT);
-}
-
-/**
- * Sample the generated noise and use it to create a stream of random numbers.
- */
-void outputRandomNumbers()
-{
-  uint8_t whithenedNoise = sample8BitsWhitenedNoise();
-  uint32_t extractedNoise = extract32Bits(whithenedNoise);
-
-  for (int ix = 0; ix < 4; ix++)
-  {
-    outputDataHex(extractedNoise & 0xFF);
-    extractedNoise = extractedNoise >> 8;
-  }
-}
-
-// The data collected so far might be biased, we do some
-// whitening applying John von Neumann whitening algoirthm.
-// The algorithm consumes 2+ bits to generate one bit, the
-// amount of consumed bits depends on the biasig of the
-// source. The algorithm consits in taking couple of bits,
-// if they are equal they are discarded if they are "10" then
-// a 1 is taken as output, if they are "01" then 0 is taken
-// as output.
+ * The data collected from the noise might be biased, we do some
+ * whitening applying John von Neumann whitening algoirthm.
+*/
 uint8_t sample8BitsWhitenedNoise()
 {
   byte whitenedOut = 0;
@@ -179,7 +54,7 @@ uint8_t sample8BitsWhitenedNoise()
 
   while (true)
   {
-    uint8_t sampledNoise = sample2BitsNoise();
+    uint8_t sampledNoise = sampleNBitsOfNoise(2);
 
     if ((sampledNoise & 1) != ((sampledNoise >> 1) & 1))
     {
@@ -194,13 +69,13 @@ uint8_t sample8BitsWhitenedNoise()
 }
 
 /**
- * Sample 2 bits from the analog noise source.
+ * Sample N (max 8) bits from the analog noise source.
  */
-uint8_t sample2BitsNoise()
+uint8_t sampleNBitsOfNoise(uint8_t bits)
 {
   int analogValue = 0;
   uint8_t sampledNoise = 0;
-  for (int ix = 0; ix < 2; ix++)
+  for (int ix = 0; ix < bits; ix++)
   {
     analogValue = 0;
     while (analogValue == 0)
@@ -214,22 +89,8 @@ uint8_t sample2BitsNoise()
   return sampledNoise;
 }
 
-/*
- * Extract 32-bits of entropy given an 8 bit random number.
- * 
- * The CRC32 keeps running and changes at every byte processed.
- * 
- * TODO: prime the CRC32 by discarding the result of the first 4 bytes
- * put through it.
- */
-uint32_t extract32Bits(uint8_t randomNumber)
-{
-  crc.update(randomNumber);
-  return crc.finalize();
-}
-
-/*
- * Output data as two digits HEX, dot separated with 16 bytes per line.
+/**
+ * Output data as two digits HEX, dot separated with 32 bytes per line.
  */
 void outputDataHex(byte randomNumber)
 {
