@@ -18,7 +18,7 @@ Below is an analysys of the raw bitstream, as collected from the ADC by sampling
 
 While the entropy and serial correlation values are good all the other values are not. From the mean value and the 1s probability we can determine this is just due to bias towards 1s. This is also visually confirmed by the probability distribution graph below. The staggered curve, which also raises towards right, is due to the higer probability of numbers containing more 1s. Note also the sharp drop at 127 -> 128 (b01111111 -> b10000000).
 
-![Probability Distribution](../documentation/prob_distr_rbs05.png)
+![Probability Distribution](../documentation/prob_rbs05.png)
 
 # Whitened Bit Stream #
 
@@ -30,7 +30,7 @@ While the entropy and serial correlation values are good all the other values ar
 | 4    | 7.993850 | 271.584000  | 22.71      | 128.028094 | 3.124695    | 0.002754           | 0.501012       |
 | 5    | 7.994989 | 221.440000  | 93.66      | 128.302500 | 3.132946    |-0.017488           | 0.500812       |
 
-![Probability Distribution](../documentation/prob_distr_wbs05.png)
+![Probability Distribution](../documentation/prob_wbs05.png)
 
 
 # Overall Performance #
