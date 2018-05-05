@@ -37,7 +37,11 @@ While the entropy has been preserved, the 1s probabilty, and hence mean values, 
 
 ![Probability](../documentation/prob_wbs05.png)
 
-Below is the error probability distribution comparison between the raw bitstream (red) and the whitened stream (blue). The error has been calculated as follows: |En-On|/En, where En is the expected occurence of a given value n in the sample and On is the observed occurrence o the value n in the same sample. Given we expect a uniform distribution En is SampleSize/256 for all n. From the graph below we can visually appreciate the error distribution is heavier on the low side for the withened steam, as desired. 
+Below is the error probability distribution comparison between the raw bitstream (red) and the whitened stream (blue). The error (ERR) for a number n has been calculated as:
+
+![ErrorFormula](../documentation/ErrorFormula.gif)
+
+where En is the expected occurence of a given value n in the sample and On is the observed occurrence o the value n in the same sample. Given we expect a uniform distribution En is SampleSize/256 for all n. From the graph below we can visually appreciate the error distribution is heavier on the low side for the withened steam, as desired. 
 
 ![Probability](../documentation/error_dist_wh_raw.png)
 
