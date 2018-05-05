@@ -43,55 +43,7 @@ Once the noise is sampled it gets converted to a train of 0s and 1s by taking th
 
 ## Validation ##
 
-First of all I needed to make sure the noise I was seeing was coming from the zener and not from other sources on the board which, most likely, wouldn't be random due to the regularly repetitive nature of most signals on the board. To do this I have changed the software to not run the charge pump, after the first round. This caused the voltage on the reserviour capacitor C6 to slowly decrease, while all the other signals on the board were still as  in normal operation. I could confirm the noise slowly decreased as C6 voltage dropped proving the source is the zener and not leackage from the digital circuits.
-
-I proceeded then to analyze the data generated for randomness. The software outputs the randomly generated numbers on the serial port in HEX dump format. So data can be first collected in a dump file in this way:
-
-    stty -F /dev/ttyUSB0 115200
-    cat /dev/ttyUSB0 | tee dump.txt
-
-Once enough data is collected the dump file can be converted to binary and analyzed with "ent":
-
-    xxd -r -p dump.txt random.bin
-    ent random.bin
-
-After some mishap that gave rather peculiar results, see [Project Log](LOG.md), I got the first promising analysys on a stream of roughly 3Mbits. Below the results:
-
-    Entropy = 1.000000 bits per bit.
-
-    Optimum compression would reduce the size
-    of this 3244800 bit file by 0 percent.
-
-    Chi square distribution for 3244800 samples is 0.68, and randomly
-    would exceed this value 41.00 percent of the times.
-
-    Arithmetic mean value of data bits is 0.5002 (0.5 = random).
-    Monte Carlo value for Pi is 3.133372781 (error 0.26 percent).
-    Serial correlation coefficient is -0.000792 (totally uncorrelated = 0.0).
-
-The same file analyzed as bytes:
-
-    Entropy = 7.999547 bits per byte.
-
-    Optimum compression would reduce the size
-    of this 405600 byte file by 0 percent.
-
-    Chi square distribution for 405600 samples is 254.87, and randomly
-    would exceed this value 49.04 percent of the times.
-
-    Arithmetic mean value of data bytes is 127.5233 (127.5 = random).
-    Monte Carlo value for Pi is 3.133372781 (error 0.26 percent).
-    Serial correlation coefficient is -0.000240 (totally uncorrelated = 0.0).
-
-The system currently generates roughly 39Kbits/s.
-
-You can pipe the output directly to dieharder after converting the hexdump to bin:
-
-    cat /dev/ttyUSB0 | xxd -r | dieharder -a
-    
-Dieharder tests results [here](dieharder.md)
-
-![Distribution](documentation/distribution_good.png)
+See the [Validation](validation/README.md) section for details on the validation process.
 
 ## Photos ##
 
