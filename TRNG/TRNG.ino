@@ -1,3 +1,4 @@
+#include <CRC32.h>
 
 // TRNG implements a true random numbers generator.
 //  Copyright (C) 2018 Nicola Cimmino
@@ -27,11 +28,7 @@
 #define CHG_PUMP_LIMIT_LO 260
 #define CHG_PUMP_ALARM_DELAY_MS 10000
 
-// Tempoary storage for output from the whitening process.
-byte whitenedOut = 0;
-
-// Amount of bits produced by the whitening pocess.
-byte whitenedBitsCount = 0;
+CRC32 crc;
 
 /**
  * Arduino setup.
@@ -39,6 +36,11 @@ byte whitenedBitsCount = 0;
 void setup()
 {
   Serial.begin(115200);
+
+  //  Set ADC prescaler to 16 so we get higher sample rate than with default settings.
+  _SFR_BYTE(ADCSRA) |= _BV(ADPS2);  // Set ADPS2
+  _SFR_BYTE(ADCSRA) &= ~_BV(ADPS1); // Clear ADPS1
+  _SFR_BYTE(ADCSRA) &= ~_BV(ADPS0); // Clear ADPS0
 
   pinMode(PIN_NOISE_IN, INPUT);
   pinMode(PIN_CHG_PUMP_SENSE, INPUT);
@@ -61,7 +63,7 @@ void loop()
   // to generate random numbers, until the reserviour runs low.
   while (isHighVoltageReseviourAboveMin())
   {
-    generateRandomNumbers();
+    outputRandomNumbers();
   }
 }
 
@@ -150,42 +152,55 @@ void setChargePumpOutputsHiZ(bool on)
 /**
  * Sample the generated noise and use it to create a stream of random numbers.
  */
-void generateRandomNumbers()
+void outputRandomNumbers()
 {
-  uint32_t sampledNoise = sampleNoise();
+  uint8_t whithenedNoise = sample8BitsWhitenedNoise();
+  uint32_t extractedNoise = extract32Bits(whithenedNoise);
 
-  // The data collected so far might be biased, we do some
-  // whitening applying John von Neumann whitening algoirthm.
-  // The algorithm consumes 2+ bits to generate one bit, the
-  // amount of consumed bits depends on the biasig of the
-  // source. The algorithm consits in taking couple of bits,
-  // if they are equal they are discarded if they are "10" then
-  // a 1 is taken as output, if they are "01" then 0 is taken
-  // as output.
-  for (int ix = 0; ix < 32; ix += 2)
+  for (int ix = 0; ix < 4; ix++)
   {
+    outputDataHex(extractedNoise & 0xFF);
+    extractedNoise = extractedNoise >> 8;
+  }
+}
+
+// The data collected so far might be biased, we do some
+// whitening applying John von Neumann whitening algoirthm.
+// The algorithm consumes 2+ bits to generate one bit, the
+// amount of consumed bits depends on the biasig of the
+// source. The algorithm consits in taking couple of bits,
+// if they are equal they are discarded if they are "10" then
+// a 1 is taken as output, if they are "01" then 0 is taken
+// as output.
+uint8_t sample8BitsWhitenedNoise()
+{
+  byte whitenedOut = 0;
+  byte whitenedBitsCount = 0;
+
+  while (true)
+  {
+    uint8_t sampledNoise = sample2BitsNoise();
+
     if ((sampledNoise & 1) != ((sampledNoise >> 1) & 1))
     {
       whitenedOut = (whitenedOut << 1) | (sampledNoise & 1);
       whitenedBitsCount++;
       if (whitenedBitsCount == 8)
       {
-        outputDataHex(whitenedOut);
-        whitenedBitsCount = 0;
+        return whitenedOut;
       }
     }
-    sampledNoise = sampledNoise >> 2;
   }
 }
 
 /**
- * Sample 32 bits from the analog noise source.
+ * Sample 2 bits from the analog noise source.
  */
-uint32_t sampleNoise()
+uint8_t sample2BitsNoise()
 {
   int analogValue = 0;
-  uint32_t sampledNoise = 0;
-  for (int ix = 0; ix < 32; ix++)
+  uint8_t sampledNoise = 0;
+  for (int ix = 0; ix < 2; ix++)
   {
     analogValue = 0;
     while (analogValue == 0)
@@ -200,11 +215,28 @@ uint32_t sampleNoise()
 }
 
 /*
+ * Extract 32-bits of entropy given an 8 bit random number.
+ * 
+ * The CRC32 keeps running and changes at every byte processed.
+ * 
+ * TODO: prime the CRC32 by discarding the result of the first 4 bytes
+ * put through it.
+ */
+uint32_t extract32Bits(uint8_t randomNumber)
+{
+  crc.update(randomNumber);
+  return crc.finalize();
+}
+
+/*
  * Output data as two digits HEX, dot separated with 16 bytes per line.
  */
 void outputDataHex(byte randomNumber)
 {
+  byte static outputBytes = 0;
+
   Serial.print("0123456789ABCDEF"[(randomNumber >> 4) & 0xF]);
   Serial.print("0123456789ABCDEF"[randomNumber & 0xF]);
-  Serial.print(".");
+  Serial.print((outputBytes % 32 == 31) ? "\n" : ".");
+  outputBytes++;
 }
