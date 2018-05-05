@@ -20,6 +20,17 @@ While the entropy and serial correlation values are good all the other values ar
 
 ![Probability Distribution](../documentation/prob_distr_rbs05.png)
 
+# Withened Bit Stream #
+
+| #    | Entropy  | Chi^2 Dist. | Chi^2 %    | Mean Value | MC Pi       | Serial Correlation | 1s probability |
+|:----:|---------:|------------:|-----------:|-----------:|------------:|-------------------:|---------------:|
+| 1    | 7.992970 | 309.136000  | 14.36      | 126.652594 | 3.143446    |-0.002274           | 0.498555       |
+| 2    | 7.994242 | 256.096000  | 46.89      | 127.130844 | 3.194450    | 0.009076           | 0.499832       |
+| 3    | 7.994590 | 241.776000  | 71.44      | 127.452781 | 3.153947    | 0.001600           | 0.498980       |
+| 4    | 7.993850 | 271.584000  | 22.71      | 128.028094 | 3.124695    | 0.002754           | 0.501012       |
+| 5    | 7.994989 | 221.440000  | 93.66      | 128.302500 | 3.132946    |-0.017488           | 0.500812       |
+
+![Probability Distribution](../documentation/prob_distr_wbs05.png)
 
 
 # Overall Performance #
@@ -27,7 +38,8 @@ While the entropy and serial correlation values are good all the other values ar
 | TAG    | kbps  | ENT | Notes                                 |
 |--------|-------|-----|---------------------------------------|
 | nogen  | 0     | N/A | Charge pump not running, no output.   |
-| rawbs | 15      |     | Only lsb sampled and appended to stream.  |
+| rawbs | 15.0      |     | Only lsb sampled and appended to stream.  |
+| whtbs | 4.3    | | As above withened with Von Neumann |
 
 | CRC32  | 16    | OK  | As above plus CRC32 extractor.        |
 
