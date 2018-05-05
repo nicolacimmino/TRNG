@@ -41,7 +41,7 @@ Below is the error probability distribution comparison between the raw bitstream
 
 ![ErrorFormula](../documentation/ErrorFormula.gif)
 
-where En is the expected occurence of a given value n in the sample and On is the observed occurrence o the value n in the same sample. Given we expect a uniform distribution En is SampleSize/256 for all n. From the graph below we can visually appreciate the error distribution is heavier on the low side for the withened steam, as desired. 
+where En is the expected occurence of a given value n in the sample and On is the observed occurrence of the value n in the same sample. Given we expect a uniform distribution En is SampleSize/256 for all n. From the graph below we can visually appreciate the error distribution is heavier on the low side for the withened steam, as desired. 
 
 ![Probability](../documentation/error_dist_wh_raw.png)
 
