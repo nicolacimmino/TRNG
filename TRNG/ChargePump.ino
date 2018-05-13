@@ -16,8 +16,8 @@
 //
 
 #define PIN_CHG_PUMP_SENSE A1
-#define PIN_YELLOW_LED 4
-#define PIN_GREEN_LED 5
+#define PIN_YELLOW_LED 5
+#define PIN_GREEN_LED 4
 #define PIN_CHG_PUMP0 13
 #define PIN_CHG_PUMP1 11
 #define PIN_CHG_PUMP2 12

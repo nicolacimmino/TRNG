@@ -15,81 +15,53 @@
 //    along with this program.  If not, see http://www.gnu.org/licenses/.
 //
 
-#define PIN_NOISE_IN A0
-
-/**
+/*
  * Arduino setup.
  */
 void setup()
 {
   Serial.begin(115200);
 
-  initChargePump();
+  initPrimaryNoiseSource();
+  initSecondaryNoiseSource();
 }
 
-/**
+/*
  * Arduino main loop.
  */
 void loop()
 {
-  chargeHighVoltageReserviour();
-
-  // The charge pump is not running now, so things are silent and we can start
-  // to generate random numbers, until the reserviour runs low.
-  while (isHighVoltageReseviourAboveMin())
-  {
-    uint8_t randomByte = sample8BitsWhitenedNoise();
-    outputDataHex(randomByte);
-  }
+  runPrimaryNoiseSource();
 }
 
-/**
- * The data collected from the noise might be biased, we do some
- * whitening applying John von Neumann whitening algoirthm.
-*/
-uint8_t sample8BitsWhitenedNoise()
-{
-  byte whitenedOut = 0;
-  byte whitenedBitsCount = 0;
-
-  while (true)
-  {
-    uint8_t sampledNoise = sampleNBitsOfNoise(2);
-
-    if ((sampledNoise & 1) != ((sampledNoise >> 1) & 1))
-    {
-      whitenedOut = (whitenedOut << 1) | (sampledNoise & 1);
-      whitenedBitsCount++;
-      if (whitenedBitsCount == 8)
-      {
-        return whitenedOut;
-      }
-    }
-  }
-}
-
-/**
- * Sample N (max 8) bits from the analog noise source.
+/*
+ * A random number from the primary source is ready. 
+ * We feed this into the randomness extractor entropy pool.
  */
-uint8_t sampleNBitsOfNoise(uint8_t bits)
+void primaryRandomNumberReady(uint8_t primaryRandomNumber)
 {
-  int analogValue = 0;
-  uint8_t sampledNoise = 0;
-  for (int ix = 0; ix < bits; ix++)
-  {
-    analogValue = 0;
-    while (analogValue == 0)
-    {
-      analogValue = analogRead(PIN_NOISE_IN);
-    }
-
-    sampledNoise = (sampledNoise << 1) | (analogValue & 1);
-  }
-
-  return sampledNoise;
+  randomnessExtractorCollectEntropy(primaryRandomNumber);
 }
 
-/**
+/*
+ * A random number from the secondary source is ready. 
+ * We feed this into the randomness extractor key entropy pool.
+ */
+void secondaryRandomNumberReady(uint8_t secondaryRandomNumber)
+{
+  randomnessExtractorCollectKeyEntropy(secondaryRandomNumber);
+}
+
+/*
+ * A random number from the randomness extraxtor is ready.
+ * This is our final output.
+ */
+void extractedRandomnessReady(uint8_t extracredRandomNumber)
+{
+  outputDataHex(extracredRandomNumber);
+}
+
+/*
  * Output data as two digits HEX, dot separated with 32 bytes per line.
  */
 void outputDataHex(byte randomNumber)
