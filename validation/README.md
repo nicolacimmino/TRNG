@@ -1,9 +1,28 @@
 
 # Validation #
 
-  [Primary Noise Source](#primary-entropy-source)
+  [**Primary Entropy Source**](#primary-entropy-source)
   
-## Primary Entropy Source ##
+  [Signal Source](#signal-source)
+  
+  [Raw Bit Stream](#raw-bit-stream)
+  
+  [Whitened Bit Stream](#whitened-bit-stream)
+  
+  [**Secondary Entropy Source**](#secondary-entropy-source)
+  
+  [Raw Bit Stream](#raw-bit-stream)
+  
+  [Whitened Bit Stream](#whitened-bit-stream)
+
+  [**Randomness Extractor**](#randomness-extractor)
+
+  [Sanity Check](#sanity-check)
+
+  [Output Bitsream](#output-bitsream)
+
+  [**Speed**](#speed)
+
 
 ### Signal Source ###
 
@@ -49,19 +68,6 @@ where En is the expected occurence of a given value n in the sample and On is th
 
 ![Probability](../documentation/error_dist_wh_raw.png)
 
-### Speed ###
-
-Below a comparison of the bitstream speed at the various stages. 
-
-| Stage    | kbps   | Notes                                                  |
-|----------|--------|--------------------------------------------------------|
-| nogen    | 0      | Charge pump not running, no output.                    |
-| rawbs    | 15.0   | lsb sampled and appended to stream.                    |
-| whtbs    | 4.3    | As above whitened with Von Neumann                     |
-| hmac256  | 1.8    | Above stream + HMAC-256 and key from secondary source. |
-
-
-
 ## Secondary Entropy Source ##
 
 ### Raw Bit Stream ###
@@ -85,7 +91,7 @@ To ensure all data is passed around as it should I made first a basic set of san
 * Fix also the key of the HMAC-256 to a known value and verify the expected output
 * Fix the key but let the primary source data throgh: the output should still be random
 
-### Output bitsream ###
+### Output Bitsream ###
 
 The output is generated in burts of 256 bits that are then broken into 32 bytes to be passed out. Below are test results for 5 samples of 32000 bytes each.
 
@@ -96,4 +102,15 @@ The output is generated in burts of 256 bits that are then broken into 32 bytes 
 | 3    | 7.999418 | 257.84      | 43.84      | 127.5341   | 3.136069600 | 0.000330           | 0.500315       |
 | 4    | 7.999534 | 206.77      | **98.80**  | 127.5291   | 3.146119663 | 0.001146           | 0.500458       |
 | 5    | 7.999373 | 278.28      | 15.14      | 127.4677   | 3.141844637 | 0.001099           | 0.500116       |
+
+## Speed ##
+
+Below a comparison of the bitstream speed at the various stages. 
+
+| Stage    | kbps   | Notes                                                  |
+|----------|--------|--------------------------------------------------------|
+| nogen    | 0      | Charge pump not running, no output.                    |
+| rawbs    | 15.0   | lsb sampled and appended to stream.                    |
+| whtbs    | 4.3    | As above whitened with Von Neumann                     |
+| hmac256  | 1.8    | Above stream + HMAC-256 and key from secondary source. |
 
