@@ -1,11 +1,13 @@
 
 # Validation #
 
-## Signal Source ##
+## Primary Entropy Source ##
+
+### Signal Source ###
 
 The first test was to ensure I was sampling noise from the source and not internal noise as this might exibit patterns. Without making any changes to the hardware I have simply run the code without ever running the charge pump. As Expected the ADC consistenly returned zero (its input is not floating due to the input pull-down).
 
-## Raw Bit Stream ##
+### Raw Bit Stream ###
 
 Below is an analysys of the raw bitstream, as collected from the ADC by sampling the lsb 8 times to produce 1 byte. The below data was calculated on 5 samples of 32KBytes each.
 
@@ -21,7 +23,7 @@ While the entropy and serial correlation values are good all the other values ar
 
 ![Probability](../documentation/prob_rbs05.png)
 
-## Whitened Bit Stream ##
+### Whitened Bit Stream ###
 
 The following stage is responsible of whitening the bistream, ie to remove the bit bias. This stage is implemented using the Von Neumann algorithm. The below data was calculated on 5 samples of 32KBytes each.
 
@@ -45,7 +47,7 @@ where En is the expected occurence of a given value n in the sample and On is th
 
 ![Probability](../documentation/error_dist_wh_raw.png)
 
-## Speed ##
+### Speed ###
 
 Below a comparison of the bitstream speed at the various stages. 
 
@@ -54,3 +56,16 @@ Below a comparison of the bitstream speed at the various stages.
 | nogen  | 0      | Charge pump not running, no output.   |
 | rawbs  | 15.0   | lsb sampled and appended to stream.   |
 | whtbs  | 4.3    | As above whitened with Von Neumann    |
+
+
+## Secondary Entropy Source ##
+
+### Raw Bit Stream ###
+
+### Withened Bit Stream ###
+
+The raw bitstream is processed through a CRC32 to remove bias. Every 32 bits pushed into the CRC generate a 32-bit output. Below are test results for 5 samples of 3200 bytes each.
+
+| #    | Entropy  | Chi^2 Dist. | Chi^2 %    | Mean Value | MC Pi       | Serial Correlation | 1s probability |
+|:----:|---------:|------------:|-----------:|-----------:|------------:|-------------------:|---------------:|
+| 1    | 7.939663 | 261.44      | 37.74      | 126.6228   | 3.181988743 | 0.022598           | 0.502344       |

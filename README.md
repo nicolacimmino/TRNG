@@ -7,8 +7,6 @@ Below is the schematic of the analog circuitry which is then hooked up an Arduin
 
 ![Schematic](documentation/schematic2.png)
 
-If you are interested in the evolution of this project and few things I tried, and failed at, before coming to the current iteration see the [Project Log](LOG.md)
-
 ## The charge pump ##
 
 The only available voltage is the 5V provided by the USB supply so I needed to first of all get a higher voltage to be able to run the zener close to its reverse breakdown voltage. I used a charge pump to get the higher voltage. The pump is made up of the schottky diodes D2-D5, C2-C4, C6 and L1. Under software control, PH0-2 alternate between 5v and 0v. If we assume PH0 starts at 0v then C2 will charge at 5V through D2. When then PH0 switches to 5V the junction between C2 and D2 will be lifted to 10V (5V PH0 plus the 5V across C2), at the same time D2 prevents current to flow back to the 5V rail and discharge C2. If PH1 is at this point at 0V current can flow from C2 to C3 instead, through D3. This will charge C3 to 10V. The process repeats with C3 raising to 15V when PH1 goes to 5V and so on. In an ideal circuit you would get 20V at the output, though there are voltage drops in the diodes so I'm getting about 17V. L1 is not critical but it helps getting rid of the digital noise that might still leak through the diodes once the charge pump stops. There is a closed loop control of the output voltage provided by feeding a portion of the voltage through R7/R8 to the board A/D converter, so software can run the charge pump only when the voltage is below a preset level.
