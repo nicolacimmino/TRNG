@@ -4,9 +4,7 @@
   [**Primary Entropy Source**](#primary-entropy-source)
   
   [Signal Source](#signal-source)
-  
   [Raw Bit Stream](#raw-bit-stream)
-  
   [Whitened Bit Stream](#whitened-bit-stream)
   
   [**Secondary Entropy Source**](#secondary-entropy-source)
