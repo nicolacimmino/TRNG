@@ -1,27 +1,6 @@
 
 # Validation #
 
-[**Primary Entropy Source**](#primary-entropy-source)
-[Signal Source](#signal-source)
-[Raw Bit Stream](#raw-bit-stream)
-[Whitened Bit Stream](#whitened-bit-stream)
-
-
-  [**Secondary Entropy Source**](#secondary-entropy-source)
-  
-  [Raw Bit Stream](#raw-bit-stream)
-  
-  [Whitened Bit Stream](#whitened-bit-stream)
-
-  [**Randomness Extractor**](#randomness-extractor)
-
-  [Sanity Check](#sanity-check)
-
-  [Output Bitsream](#output-bitsream)
-
-  [**Speed**](#speed)
-
-
 ### Signal Source ###
 
 The first test was to ensure I was sampling noise from the source and not internal noise as this might exibit patterns. Without making any changes to the hardware I have simply run the code without ever running the charge pump. As Expected the ADC consistenly returned zero (its input is not floating due to the input pull-down).
