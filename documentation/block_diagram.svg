@@ -14,7 +14,10 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="block_diagram.svg">
+   sodipodi:docname="block_diagram.svg"
+   inkscape:export-filename="C:\Users\nicola\Documents\git\TRNG\documentation\block_diagram.png"
+   inkscape:export-xdpi="129.92496"
+   inkscape:export-ydpi="129.92496">
   <defs
      id="defs4">
     <marker
@@ -68,7 +71,7 @@
      inkscape:cx="416.42213"
      inkscape:cy="1968.6059"
      inkscape:document-units="px"
-     inkscape:current-layer="g4406-6-8"
+     inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1707"
      inkscape:window-height="897"
@@ -91,22 +94,26 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <g
+       id="g9610"
+       style="stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;fill:#f3f7f9;fill-opacity:1">
+      <rect
+         y="-986.62372"
+         x="166.98592"
+         height="59.763382"
+         width="395.49295"
+         id="rect9550"
+         style="fill:#f3f7f9;fill-opacity:1;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none" />
+      <rect
+         y="-1099.7054"
+         x="485.72394"
+         height="279.48169"
+         width="76.754929"
+         id="rect9552"
+         style="fill:#f3f7f9;fill-opacity:1;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none" />
+    </g>
     <rect
-       style="fill:#b7d2da;fill-opacity:1;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none"
-       id="rect9550"
-       width="395.49295"
-       height="59.763382"
-       x="166.98592"
-       y="-986.62372" />
-    <rect
-       style="fill:#b7d2da;fill-opacity:1;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none"
-       id="rect9552"
-       width="76.754929"
-       height="279.48169"
-       x="485.72394"
-       y="-1099.7054" />
-    <rect
-       style="fill:#b7d2da;fill-opacity:1;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none"
+       style="fill:#f3f7f9;fill-opacity:1;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none"
        id="rect9548"
        width="400.18027"
        height="104.87888"
@@ -114,21 +121,21 @@
        y="-1100.8772" />
     <g
        id="g9544"
-       style="stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none">
+       style="stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;fill:#f3f7f9;fill-opacity:1">
       <rect
          y="-987.20966"
          x="74.997185"
          height="161.12675"
          width="83.785912"
          id="rect9540"
-         style="fill:#b7d2da;fill-opacity:1;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none" />
+         style="fill:#f3f7f9;fill-opacity:1;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none" />
       <rect
          y="-919.82935"
          x="74.997185"
          height="100.19155"
          width="403.10986"
          id="rect9542"
-         style="fill:#b7d2da;fill-opacity:1;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none" />
+         style="fill:#f3f7f9;fill-opacity:1;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none" />
     </g>
     <g
        id="g3830"
