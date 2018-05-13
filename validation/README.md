@@ -71,3 +71,27 @@ The raw bitstream is processed through a CRC32 to remove bias. Every 32 bits pus
 | #    | Entropy  | Chi^2 Dist. | Chi^2 %    | Mean Value | MC Pi       | Serial Correlation | 1s probability |
 |:----:|---------:|------------:|-----------:|-----------:|------------:|-------------------:|---------------:|
 | 1    | 7.939663 | 261.44      | 37.74      | 126.6228   | 3.181988743 | 0.022598           | 0.502344       |
+
+
+## Randomness Extractor ##
+
+### Sanity Check ###
+
+To ensure all data is passed around as it should I made first a basic set of sanity checks by modifying the the code in strategic places and verifying the output. 
+
+* Fix the primary source output to a single value: the extractor output should change only when the key changes
+* Fix also the key of the HMAC-256 to a known value and verify the expected output
+* Fix the key but let the primary source data throgh: the output should still be random
+
+### Output bitsream ###
+
+The output is generated in burts of 256 bits that are then broken into 32 bytes to be passed out. Below are test results for 5 samples of 32000 bytes each.
+
+| #    | Entropy  | Chi^2 Dist. | Chi^2 %    | Mean Value | MC Pi       | Serial Correlation | 1s probability |
+|:----:|---------:|------------:|-----------:|-----------:|------------:|-------------------:|---------------:|
+| 1    | 7.999432 | 252.18      | 53.81      | 127.6244   | 3.135019594 | -0.000485          | 0.500208       |
+| 2    | 7.999380 | 275.59      | 17.94      | 127.3248   | 3.137569610 | -0.000699          | 0.499505       |
+| 3    | 7.999418 | 257.84      | 43.84      | 127.5341   | 3.136069600 | 0.000330           | 0.500315       |
+| 4    | 7.999534 | 206.77      | **98.80**  | 127.5291   | 3.146119663 | 0.001146           | 0.500458       |
+| 5    | 7.999373 | 278.28      | 15.14      | 127.4677   | 3.141844637 | 0.001099           | 0.500116       |
+
