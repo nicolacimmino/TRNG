@@ -51,11 +51,13 @@ where En is the expected occurence of a given value n in the sample and On is th
 
 Below a comparison of the bitstream speed at the various stages. 
 
-| Stage  | kbps   | Notes                                 |
-|--------|--------|---------------------------------------|
-| nogen  | 0      | Charge pump not running, no output.   |
-| rawbs  | 15.0   | lsb sampled and appended to stream.   |
-| whtbs  | 4.3    | As above whitened with Von Neumann    |
+| Stage    | kbps   | Notes                                                  |
+|----------|--------|--------------------------------------------------------|
+| nogen    | 0      | Charge pump not running, no output.                    |
+| rawbs    | 15.0   | lsb sampled and appended to stream.                    |
+| whtbs    | 4.3    | As above whitened with Von Neumann                     |
+| hmac256  | 1.8    | Above stream + HMAC-256 and key from secondary source. |
+
 
 
 ## Secondary Entropy Source ##
