@@ -49,6 +49,13 @@ where En is the expected occurence of a given value n in the sample and On is th
 
 ### Raw Bit Stream ###
 
+An interrupt is generated with the internal Watchdog Timer and the lsb of the timer counter is sampled at each interrupt (roughly 64mS). Below are test results for 5 samples of 3200 bytes each.
+
+| #    | Entropy  | Chi^2 Dist. | Chi^2 %    | Mean Value | MC Pi       | Serial Correlation | 1s probability |
+|:----:|---------:|------------:|-----------:|-----------:|------------:|-------------------:|---------------:|
+| 1    | 7.938390 | 270.40      | 24.26      | 125.9272   | 3.106941839 | -0.004426           | 0.496445      |
+
+
 ### Withened Bit Stream ###
 
 The raw bitstream is processed through a CRC32 to remove bias. Every 32 bits pushed into the CRC generate a 32-bit output. Below are test results for 5 samples of 3200 bytes each.
@@ -90,4 +97,8 @@ Below a comparison of the bitstream speed at the various stages.
 | rawbs    | 15.0   | lsb sampled and appended to stream.                    |
 | whtbs    | 4.3    | As above whitened with Von Neumann                     |
 | hmac256  | 1.8    | Above stream + HMAC-256 and key from secondary source. |
+| secraw   | 0.016  | Raw Secondady bitstream                                |
+| secwht   | 0.016  | Whitened Secondady bitstream                           |
+
+
 
