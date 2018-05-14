@@ -83,7 +83,7 @@ void dispatchExtractedRandomness()
 {
     uint8_t *hmac = Sha256.resultHmac();
 
-    for (int ix = 0; ix < collectedBytes; ix++)
+    for (int ix = 0; ix < 32; ix++)
     {
         extractedRandomnessReady(hmac[ix]);
     }
