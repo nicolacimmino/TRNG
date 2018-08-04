@@ -60,5 +60,18 @@ void secondaryRandomNumberReady(uint8_t secondaryRandomNumber)
  */
 void extractedRandomnessReady(uint8_t extracredRandomNumber)
 {
-   Serial.write(extracredRandomNumber);
+  outputDataHex(extracredRandomNumber);
+}
+
+/*
+ * Output data as two digits HEX, dot separated with 32 bytes per line.
+ */
+void outputDataHex(byte randomNumber)
+{
+  byte static outputBytes = 0;
+
+  Serial.print("0123456789ABCDEF"[(randomNumber >> 4) & 0xF]);
+  Serial.print("0123456789ABCDEF"[randomNumber & 0xF]);
+  Serial.print((outputBytes % 32 == 31) ? "\n" : ".");
+  outputBytes++;
 }
