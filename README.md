@@ -59,6 +59,6 @@ See the [Validation](validation/README.md) section for details on the validation
 
 ## Photos ##
 
-Below is the assembled protorype with the noise source and an Arduino Nano.
+Below is the assembled protorype with the noise source and an Arduino Nano. There is some extra hardware on bottom right (an opAmp and transistor) that are part of previous iterations of the prototype.
 
 ![Proto](documentation/proto2.png)
