@@ -74,7 +74,7 @@ Below is an analysys of the raw bitstream, as collected from the ADC by sampling
 
 While the entropy and serial correlation values are good all the other values are not. From the mean value and the 1s probability we can determine this is just due to bias towards 1s. This is also visually confirmed by the probability distribution graph below. The staggered curve, which also raises towards right, is due to the higer probability of numbers containing more 1s. Note also the sharp drop at 127 -> 128 (b01111111 -> b10000000). The bias is expected and is due to accuracy in the comparator in the ADC converter. 
 
-![Probability](../documentation/prob_rbs05.png)
+![Probability](documentation/prob_rbs05.png)
 
 ### Whitened Bit Stream ###
 
@@ -90,15 +90,15 @@ The following stage is responsible of whitening the bistream, ie to remove the b
 
 While the entropy has been preserved, the 1s probabilty, and hence mean values, have now been fixed. Also Chi^2 distribution is much more convincing due to a more uniform distribution of the values. This can be seen also visually below.
 
-![Probability](../documentation/prob_wbs05.png)
+![Probability](documentation/prob_wbs05.png)
 
 Below is the error probability distribution comparison between the raw bitstream (red) and the whitened stream (blue). The error (ERR) for a number n has been calculated as:
 
-![ErrorFormula](../documentation/ErrorFormula.gif)
+![ErrorFormula](documentation/ErrorFormula.gif)
 
 where En is the expected occurence of a given value n in the sample and On is the observed occurrence of the value n in the same sample. Given we expect a uniform distribution En is SampleSize/256 for all n. From the graph below we can visually appreciate the error distribution is heavier on the low side for the withened steam, as desired. 
 
-![Probability](../documentation/error_dist_wh_raw.png)
+![Probability](documentation/error_dist_wh_raw.png)
 
 ## Secondary Entropy Source ##
 
