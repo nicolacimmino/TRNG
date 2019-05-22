@@ -16,6 +16,11 @@
 //    along with this program.  If not, see http://www.gnu.org/licenses/.
 //
 
+/**
+ * Callback invoked once 8 bits of random noise are ready.
+ */
+extern void primaryRandomNumberReady(uint8_t primaryRandomNumber);
+
 void initPrimaryNoiseSource()
 {
     initChargePump();    
@@ -24,13 +29,13 @@ void initPrimaryNoiseSource()
 void runPrimaryNoiseSource()
 {
   chargeHighVoltageReserviour();
-
+  
   // The charge pump is not running now, so things are silent and we can start
   // to generate random numbers, until the reserviour runs low.
   while (isHighVoltageReseviourAboveMin())
   {
     uint8_t randomByte = sample8BitsWhitenedNoise();    
-    primaryRandomNumberReady(randomByte);
+    primaryRandomNumberReady(randomByte);    
   }
 }
 
@@ -79,8 +84,3 @@ uint8_t sampleNBitsOfNoise(uint8_t bits)
 
   return sampledNoise;
 }
-
-/**
- * Callback invoked once 8 bits of random noise are ready.
- */
-extern void primaryRandomNumberReady(uint8_t primaryRandomNumber);

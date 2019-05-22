@@ -19,14 +19,21 @@
 // https://github.com/daknuett/cryptosuite2
 #include <sha256.h>
 
+/**
+ * Callback invoked once 8 bits of extracted randomness are ready.
+ */
+extern void extractedRandomnessReady(uint8_t extractedRandomNumber);
+
 // The 256-bit key currently used by the HMAC-256 to extract randoness.
-static uint8_t randomnessExtractorSecretKey[32];
+uint8_t randomnessExtractorSecretKey[32];
 
 // The swap 256-bit where the next key is being collected..
-static uint8_t randomnessExtractorSecretKeySwap[32];
+uint8_t randomnessExtractorSecretKeySwap[32];
 
 // If false it signals randomnessExtractorSecretKey is not yet valid.
 bool randomnessExtractorSecretKeyValid = false;
+
+bool randomnessExtractorSecretKeyId = false;
 
 /**
  * Collect entropy to be used for the key.
@@ -43,6 +50,7 @@ void randomnessExtractorCollectKeyEntropy(uint8_t randomNumber)
         memcpy(randomnessExtractorSecretKey, randomnessExtractorSecretKeySwap, 32);
         keyIndex = 0;
         randomnessExtractorSecretKeyValid = true;
+        randomnessExtractorSecretKeyId = !randomnessExtractorSecretKeyId;
     }
 }
 
@@ -88,8 +96,3 @@ void dispatchExtractedRandomness()
         extractedRandomnessReady(hmac[ix]);
     }
 }
-
-/**
- * Callback invoked once 8 bits of extracted randomness are ready.
- */
-extern void extractedRandomnessReady(uint8_t extractedRandomNumber);

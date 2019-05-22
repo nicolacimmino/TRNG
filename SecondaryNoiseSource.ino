@@ -14,7 +14,6 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see http://www.gnu.org/licenses/.
 //
-#include <Arduino.h>
 #include <avr/wdt.h>
 #include <CRC32.h>
 
@@ -23,13 +22,23 @@
 CRC32 crc;
 
 /**
+ * Callback invoked on every tick of the generated time base (640mS).
+ */
+extern void timeBaseTick();
+
+/**
+ * Callback invoked once 8 bits of random data are ready.
+ */
+extern void secondaryRandomNumberReady(uint8_t secondaryRandomNumber);
+
+/**
  * Initialise the noise source.
  * This starts the WDT interrupts.
  */
 void initSecondaryNoiseSource()
 {
     pinMode(PIN_YELLOW_LED_SECONDARY, OUTPUT);
-    
+
     // Setup a watchdog interrupt every 64mS.
     cli();
     _WD_CONTROL_REG = (1 << WDCE) | (1 << WDE);
@@ -38,12 +47,18 @@ void initSecondaryNoiseSource()
 }
 
 /**
- * This is the Arduino Interrup Service Routine, which will be 
+ * This is the Arduino Interrupt Service Routine, which will be 
  * called by the WDT interrupt every 64ms.
  */
 ISR(WDT_vect)
 {
     collectSecondaryNoise();
+
+    static uint8_t prescaler = 0;
+    if (prescaler++ % 10 == 0)
+    {
+        timeBaseTick();
+    }
 }
 
 /**
@@ -55,14 +70,14 @@ void collectSecondaryNoise()
 {
     static uint32_t noiseBuffer = 0;
     static uint8_t collectedBits = 0;
-    
+
     noiseBuffer = (noiseBuffer << 1) | (TCNT1L & 1);
     collectedBits++;
 
-    if(collectedBits == 32) 
+    if (collectedBits == 32)
     {
         createSecondaryRandomNumber(noiseBuffer);
-        collectedBits = 0;       
+        collectedBits = 0;
     }
 
     digitalWrite(PIN_YELLOW_LED_SECONDARY, collectedBits < 4 ? HIGH : LOW);
@@ -78,13 +93,9 @@ void createSecondaryRandomNumber(uint32_t noiseBuffer)
     crc.update(noiseBuffer);
     uint32_t randomNumber = crc.finalize();
 
-    for(int ix=0; ix<4; ix++) {
+    for (int ix = 0; ix < 4; ix++)
+    {
         secondaryRandomNumberReady(randomNumber & 0xFF);
         randomNumber = randomNumber >> 8;
     }
 }
-
-/**
- * Callback invoked once 8 bits of random data are ready.
- */
-extern void secondaryRandomNumberReady(uint8_t secondaryRandomNumber);

@@ -17,12 +17,18 @@
 
 #define PIN_NOISE_IN A0
 
+unsigned int outputSpeedbps = 0;
+
 /*
  * Arduino setup.
  */
 void setup()
 {
   Serial.begin(115200);
+
+  initDisplay();
+
+  performPost();
 
   initPrimaryNoiseSource();
   initSecondaryNoiseSource();
@@ -63,15 +69,30 @@ void extractedRandomnessReady(uint8_t extracredRandomNumber)
   outputDataHex(extracredRandomNumber);
 }
 
+/**
+ * Invoked every 640mS by the SecondaryNoise source time base generator. 
+ */
+void timeBaseTick()
+{
+  refreshDisplay();
+}
+
 /*
  * Output data as two digits HEX, dot separated with 32 bytes per line.
  */
 void outputDataHex(byte randomNumber)
 {
-  byte static outputBytes = 0;
+  uint8_t static outputBytes = 0;
+  unsigned long static lastStatTime = millis();
 
   Serial.print("0123456789ABCDEF"[(randomNumber >> 4) & 0xF]);
   Serial.print("0123456789ABCDEF"[randomNumber & 0xF]);
   Serial.print((outputBytes % 32 == 31) ? "\n" : ".");
   outputBytes++;
+
+  if (outputBytes % 64 == 63)
+  {
+    outputSpeedbps = 8 * 64000 / (millis() - lastStatTime);
+    lastStatTime = millis();
+  }
 }

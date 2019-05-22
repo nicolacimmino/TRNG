@@ -25,6 +25,9 @@
 #define CHG_PUMP_LIMIT_LO 260
 #define CHG_PUMP_ALARM_DELAY_MS 10000
 
+volatile long chgPumpLevel;
+volatile bool highVoltageReserviourGood = false;
+
 void initChargePump()
 {
     //  Set ADC prescaler to 16 so we get higher sample rate than with default settings.
@@ -51,8 +54,8 @@ void chargeHighVoltageReserviour()
 {
     setChargePumpOutputsHiZ(false);
     setChargePumpIndicator(true);
-
-    long chgPumpLevel;
+    highVoltageReserviourGood = false;
+    
     unsigned char phase = 0;
     unsigned long startTime = millis();
     while ((chgPumpLevel = analogRead(PIN_CHG_PUMP_SENSE)) < CHG_PUMP_LIMIT_HI)
@@ -61,7 +64,7 @@ void chargeHighVoltageReserviour()
         digitalWrite(PIN_CHG_PUMP1, (phase % 2 == 0) ? LOW : HIGH);
         digitalWrite(PIN_CHG_PUMP2, (phase % 2 == 0) ? HIGH : LOW);
         phase++;
-
+        
         // millis wrapped around, don't get stuck in alarm.
         if (millis() < startTime)
         {
@@ -76,11 +79,12 @@ void chargeHighVoltageReserviour()
 
     setChargePumpOutputsHiZ(true);
     setChargePumpIndicator(false);
+    highVoltageReserviourGood = true;
 }
 
 bool isHighVoltageReseviourAboveMin()
 {
-    return analogRead(PIN_CHG_PUMP_SENSE) > CHG_PUMP_LIMIT_LO;
+    return (chgPumpLevel = analogRead(PIN_CHG_PUMP_SENSE)) > CHG_PUMP_LIMIT_LO;
 }
 
 /**
