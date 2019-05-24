@@ -1,4 +1,5 @@
 // Secondary noise source pulls 32 bits of entropy from the internal time jitter.
+//
 //  Copyright (C) 2019 Nicola Cimmino
 //
 //    This program is free software: you can redistribute it and/or modify
