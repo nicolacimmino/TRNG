@@ -1,7 +1,4 @@
-// Main sketch to run all tests.
-//
-// Note: this needs to be in the root of the project folder due to the way the Arduino compiler
-// grabs only files in the subfolders and copies them into the output folder.
+// TRNG Usage Example.
 //
 //  Copyright (C) 2019 Nicola Cimmino
 //
@@ -19,10 +16,14 @@
 //    along with this program.  If not, see http://www.gnu.org/licenses/.
 //
 
-#include "src/TRNG.h"
-#include "tests/SecondaryNoiseSourceTest.h"
-#include "tests/PrimaryNoiseSourceTest.h"
-#include "tests/RandomnessExtractorTest.h"
+#define PIN_CHG_PUMP_NOISEIN A0
+#define PIN_CHG_PUMP_SENSE A1
+#define PIN_CHG_PUMP0 2
+#define PIN_CHG_PUMP1 3
+#define PIN_CHG_PUMP2 4
+#define PIN_CHG_PUMP3 5
+
+#include <TRNG.h>
 
 void setup()
 {
@@ -31,16 +32,6 @@ void setup()
 
 void loop()
 {
-    proboInit(&Serial);
-    runTestPrimaryNoiseSource();
-    runTestSecondaryNoiseSource();
-    runTestRandomnessExtractor();
-
-    spitupNumbers();
-}
-
-void spitupNumbers()
-{
     TRNG trng;
     trng.begin(PIN_CHG_PUMP0, PIN_CHG_PUMP1, PIN_CHG_PUMP2, PIN_CHG_PUMP3, PIN_CHG_PUMP_SENSE, PIN_CHG_PUMP_NOISEIN);
 
@@ -48,6 +39,10 @@ void spitupNumbers()
 
     while (true)
     {
+        // You need to keep calling trng.loop() to collect more entropy until, eventually, 
+        // trng.isRandomDataReady() will become true and trng.getRandomByte().
+        // Note: you need to check trng.isRandomDataReady() as calling trng.getRandomByte()
+        // depletes the generated random data.
         trng.loop();
 
         while (trng.isRandomDataReady())
@@ -57,7 +52,7 @@ void spitupNumbers()
     }
 }
 
-/*
+/**
  * Output data as two digits HEX, dot separated with 32 bytes per line.
  */
 void outputDataHex(uint8_t randomNumber)

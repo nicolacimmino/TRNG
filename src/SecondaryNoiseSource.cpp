@@ -75,18 +75,26 @@ void SecondaryNoiseSource::collectSecondaryNoise()
 void SecondaryNoiseSource::createSecondaryRandomNumber(uint32_t noiseBuffer)
 {
     this->crc.update(noiseBuffer);
-    this->randomWord = this->crc.finalize();
-    this->randomWordReady = true;
+
+    uint32_t crc = this->crc.finalize();
+
+    for (int ix = 0; ix < 4; ix++)
+    {
+        this->randomData[ix] = crc & 0xFF;
+        crc = crc >> 8;
+    }
+
+    this->randomDataReady = true;
 }
 
-bool SecondaryNoiseSource::isRandomWordReady()
+bool SecondaryNoiseSource::isRandomDataReady()
 {
-    return this->randomWordReady;
+    return this->randomDataReady;
 }
 
-uint32_t SecondaryNoiseSource::getRandomWord()
+uint8_t *SecondaryNoiseSource::getRandomData()
 {
-    this->randomWordReady = false;
+    this->randomDataReady = false;
 
-    return this->randomWord;
+    return this->randomData;
 }
