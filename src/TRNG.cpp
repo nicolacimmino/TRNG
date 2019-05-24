@@ -36,7 +36,7 @@ void TRNG::loop()
     if (this->pSecondaryNoiseSource->isRandomDataReady())
     {        
         uint8_t *randomData = this->pSecondaryNoiseSource->getRandomData();
-        for (int ix = 0; ix < sizeof(randomData) / sizeof(uint8_t); ix++)
+        for (int ix = 0; ix < 4; ix++)
         {
             this->pRandomnessExtractor->collectKeyEntropy(randomData[ix]);
         }
