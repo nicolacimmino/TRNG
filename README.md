@@ -27,9 +27,7 @@ Two LEDs indicate the status of the charge pump, see table below.
 
 The output of the charge pump is used to reverse bias the 12V zener diode D1 through the 530K resistor R1. The value of the resistor was determined empirically to be the one providing the best noise levels. The value of R1 also depends on the rest of the circuitry that loads the noise source, in general a higher value will mean a higher voltage fluctuation for a given current fluctuation in the zener. At the same time this raises the impedance of the noise source, so will weaken the signal when loaded. 
 
-C1 decuples the DC and lets the noise reach Q1. Q1, with R3 and R2, is configured as an emitter follower and has the purpose to reduce the source impedance. Finally U1, an AD818 OpAmp, provides roughly a 30x amplification. C5 decouples the DC and presents the noise finally to the A/D for sampling.
-
-NOTE: The noise at this point will be centered around 0V, this means that the lower portion will be lost by the A/D. It would be possible to get rid of C5 and play with the AD818 offset pins to get the DC somewhere half way of the A/D fullscale, this would give a 3dB boost to the signal seen in the digital world.
+C1 decuples the DC and lets the noise reach the Arduino analog input. **NOTE**: The noise at this point will be centered around 0V, this means that the lower portion will be lost by the A/D. 
 
 Below is a screenshot of the noise measured at NOUT.
 
