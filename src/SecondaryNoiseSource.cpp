@@ -40,6 +40,12 @@ SecondaryNoiseSource *SecondaryNoiseSource::instance()
 }
 
 /**
+ * If your project is using the ISR you will get compilation errors.
+ * Define __TRNG_ISR_GLOBAL_DEFINED__ and copy the body below into your global ISR function.
+ */
+#ifndef __TRNG_ISR_GLOBAL_DEFINED__
+
+/**
  * This is the Arduino Interrupt Service Routine, which will be 
  * called by the WDT interrupt every 64ms.
  */
@@ -47,6 +53,8 @@ ISR(WDT_vect)
 {
     SecondaryNoiseSource::instance()->collectSecondaryNoise();
 }
+
+#endif
 
 /**
  * This is called by an ISR driven by the timer and collects at every round
