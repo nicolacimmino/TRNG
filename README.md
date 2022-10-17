@@ -1,11 +1,13 @@
 
 # TRNG #
 
-The goal of this project is to develop a True Random Number Generator. For the noise source I chose to use a zener diode. I made a first attempt with a low voltage one (3.8V), but I couldn't get satisfactory levels of noise. I moved then to the more tried and tested higer voltage zeners (12V) which, working on the avalanche effect, produce higher levels of noise.
+The goal of this project is to develop a True Random Number Generator for a client wishing to explore the feasibility of a hardware cryptographic device. For the noise source I chose to use a zener diode. I made a first attempt with a low voltage one (3.8V), but I couldn't get satisfactory levels of noise. I moved then to the more tried and tested higer voltage zeners (12V) which, working on the avalanche effect, produce higher levels of noise.
 
 Below is the schematic of the analog circuitry which is then hooked up an Arduino board that takes care to run it and sample the noise. 
 
 ![Schematic](documentation/schematic2.png)
+
+All code has been released under the GNU General Public License V3, with permission of the client, which allowed me to showcase my projects.
 
 ## The charge pump ##
 
